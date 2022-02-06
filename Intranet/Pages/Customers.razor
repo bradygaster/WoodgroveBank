@@ -7,11 +7,40 @@
 
 <h1>Customers</h1>
 
-<p>Below are the recently-active customers. The grid updates in real-time.</p>
+<p>Below are the recently-active customers.</p>
 
-@if(_customers == null || !_customers.Any())
+@if (_customers == null || !_customers.Any())
 {
     <h3>No recent customer activity.</h3>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Customer Name</th>
+                <th>City</th>
+                <th>Country</th>
+                <th>Customer ID</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var customer in _customers)
+            {
+                <tr>
+                    <td>@customer.Name</td>
+                    <td>@customer.City</td>
+                    <td>@customer.Country</td>
+                    <td>@customer.Id</td>
+                    <td>
+                        <button class="btn btn-primary">Accounts</button>
+                        <button class="btn btn-primary">Transactions</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
 
 @code {

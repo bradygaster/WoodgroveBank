@@ -20,7 +20,7 @@ namespace WoodgroveBank.Grains
             _accountListState = accountListState;
         }
 
-        public async Task SaveCustomer(Customer customer)
+        public async Task<Customer> SaveCustomer(Customer customer)
         {
             if(customer.Id == 0) // new customer
             {
@@ -39,11 +39,14 @@ namespace WoodgroveBank.Grains
             }
 
             await _customerListState.WriteStateAsync();
+
+            return customer;
         }
 
-        public Task<Customer[]> GetCustomers()
+        public async Task<Customer[]> GetCustomers()
         {
-            return Task.FromResult(_customerListState.State.ToArray());
+            await _customerListState.ReadStateAsync();
+            return _customerListState.State.ToArray();
         }
 
         public Task<Account> OpenAccount(string name, Customer customer, AccountType accountType, decimal amount)

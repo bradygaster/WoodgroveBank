@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "API": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ORLEANS_AZURE_STORAGE_CONNECTION_STRING": "UseDevelopmentStorage=true"
+      },
+      "applicationUrl": "http://localhost:5001",
+      "dotnetRunMessages": true
+    }
+  }
+}
