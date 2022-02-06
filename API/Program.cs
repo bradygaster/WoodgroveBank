@@ -3,9 +3,9 @@ using WoodgroveBank.Abstractions;
 using WoodgroveBank.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddWoodvilleBankSilo();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.AddWoodvilleBankSilo();
 
 var app = builder.Build();
 
@@ -20,7 +20,7 @@ if (app.Environment.IsDevelopment())
 /// Get a list of all the customers.
 /// </summary>
 app.MapGet("/customers", async (IGrainFactory grainFactory) =>
-    await grainFactory.GetGrain<ICustomerGrain>(0).GetCustomers()
+    await grainFactory.GetGrain<IBankGrain>(Guid.Empty).GetCustomers()
 )
 .WithName("GetCustomers");
 
@@ -31,7 +31,8 @@ app.MapPost("/customers", async (IGrainFactory grainFactory, Customer customer) 
 {
     try
     {
-        var result = await grainFactory.GetGrain<ICustomerGrain>(0).SaveCustomer(customer);
+        var result = await grainFactory.GetGrain<ICustomerGrain>(customer.Id).SaveCustomer(customer);
+        await grainFactory.GetGrain<IBankGrain>(Guid.Empty).UpdateCustomerIndex(customer);
         return Results.Created($"/customers/{result.Id}", result);
     }
     catch (Exception ex)
@@ -46,16 +47,14 @@ app.MapPost("/customers", async (IGrainFactory grainFactory, Customer customer) 
 /// <summary>
 /// Create a new account for a customer.
 /// </summary>
-app.MapPost("/customer/{id}/accounts", async (IGrainFactory grainFactory, int id, NewAccountRequest request) =>
+app.MapPost("/customer/{id}/accounts", async (IGrainFactory grainFactory, Guid id, Account account) =>
 {
     try
     {
-        var customer = await grainFactory.GetGrain<ICustomerGrain>(id).GetCustomer();
+        var customerGrain = grainFactory.GetGrain<ICustomerGrain>(id);
+        account = await customerGrain.OpenAccount(account);
 
-        var result = await grainFactory.GetGrain<IBankGrain>(Guid.Empty)
-            .OpenAccount(request.Name, customer, request.AccountType, request.Amount);
-
-        return Results.Created($"/accounts/{result.Id}", result);
+        return Results.Created($"/accounts/{account.Id}", account);
     }
     catch (Exception ex)
     {
@@ -68,5 +67,3 @@ app.MapPost("/customer/{id}/accounts", async (IGrainFactory grainFactory, int id
 
 // run the api
 app.Run();
-
-public record NewAccountRequest(string Name, AccountType AccountType, decimal Amount);

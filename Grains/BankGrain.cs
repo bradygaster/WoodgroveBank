@@ -9,22 +9,30 @@ namespace WoodgroveBank.Grains
     {
         private IPersistentState<List<Transaction>> _transactionListState { get; set; }
         private IPersistentState<List<Account>> _accountListState { get; set; }
+        private IPersistentState<List<Customer>> _customerIndex { get; set; }
 
-        public BankGrain([PersistentState("transactions", Strings.OrleansPersistenceNames.TransactionsStore)] IPersistentState<List<Transaction>> transactionListState,
+        public BankGrain(
+            [PersistentState("customers", Strings.OrleansPersistenceNames.CustomersStore)] IPersistentState<List<Customer>> customerIndex,
+            [PersistentState("transactions", Strings.OrleansPersistenceNames.TransactionsStore)] IPersistentState<List<Transaction>> transactionListState,
             [PersistentState("accounts", Strings.OrleansPersistenceNames.AccountsStore)] IPersistentState<List<Account>> accountListState)
         {
+            _customerIndex = customerIndex;
             _transactionListState = transactionListState;
             _accountListState = accountListState;
         }
-
-        public Task<Account> OpenAccount(string name, Customer customer, AccountType accountType, decimal amount)
+        public async Task<Customer[]> GetCustomers()
         {
-            throw new NotImplementedException();
+            await _customerIndex.ReadStateAsync();
+            return _customerIndex.State.ToArray();
         }
-
-        public Task<Account[]> GetAccounts()
+        public async Task UpdateCustomerIndex(Customer customer)
         {
-            return Task.FromResult(_accountListState.State.OrderBy(x => x.DateOfLastActivity).ToArray());
+            await _customerIndex.ReadStateAsync();
+            if(!_customerIndex.State.Any(x => x.Id == customer.Id))
+            {
+                _customerIndex.State.Add(customer);
+                await _customerIndex.WriteStateAsync();
+            }
         }
 
         public Task<Transaction[]> GetRecentTransactions()
@@ -78,5 +86,6 @@ namespace WoodgroveBank.Grains
 
             return transaction.TransactionAllowed;
         }
+
     }
 }

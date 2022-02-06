@@ -4,8 +4,9 @@ namespace WoodgroveBank.Abstractions
 {
     public interface IBankGrain : IGrainWithGuidKey
     {
-        Task<Account> OpenAccount(string name, Customer customer, AccountType accountType, decimal amount);
+        Task<Customer[]> GetCustomers();
         Task<Transaction[]> GetRecentTransactions();
         Task<bool> SubmitTransaction(Transaction transaction);
+        Task UpdateCustomerIndex(Customer customer);
     }
 }

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Hosting
 {
     public static class WebApplicationBuilderOrleansExtension
     {
-        public static WebApplicationBuilder AddOrleansSilo(this WebApplicationBuilder webApplicationBuilder, Action<ISiloBuilder> siloBuilderHook = null)
+        public static WebApplicationBuilder AddOrleansSilo(this WebApplicationBuilder webApplicationBuilder, Action<ISiloBuilder> siloBuilderHook)
         {
             webApplicationBuilder.Host.UseOrleans(siloBuilder =>
             {

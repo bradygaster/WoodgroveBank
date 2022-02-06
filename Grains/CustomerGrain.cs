@@ -1,10 +1,5 @@
 ﻿using Orleans;
 using Orleans.Runtime;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WoodgroveBank.Abstractions;
 using WoodgroveBank.Infrastructure;
 
@@ -12,59 +7,39 @@ namespace WoodgroveBank.Grains
 {
     public class CustomerGrain : Grain, ICustomerGrain
     {
-        private IPersistentState<List<Customer>> _customerListState { get; set; }
+        private IPersistentState<Customer> _customerState { get; set; }
 
-        public CustomerGrain([PersistentState("customers", Strings.OrleansPersistenceNames.CustomersStore)] 
-            IPersistentState<List<Customer>> customerListState)
+        public CustomerGrain([PersistentState("customer", Strings.OrleansPersistenceNames.CustomerStore)] 
+            IPersistentState<Customer> customerState)
         {
-            _customerListState = customerListState;
+            _customerState = customerState;
         }
 
         public async Task<Customer> SaveCustomer(Customer customer)
         {
-            if (customer.Id == 0) // new customer
-            {
-                customer.Id = new Random().Next(1000, 9999);
-                _customerListState.State.Add(customer);
-            }
-            else if (!_customerListState.State.Any(x => x.Id == customer.Id)) // unrecognized customer id
-            {
-                throw new Exception("Customer doesn't match any of our known customers.");
-            }
-            else // existing customer to update
-            {
-                _customerListState.State.First(x => x.Id == customer.Id).City = customer.City;
-                _customerListState.State.First(x => x.Id == customer.Id).Country = customer.Country;
-                _customerListState.State.First(x => x.Id == customer.Id).Name = customer.Name;
-            }
-
-            await _customerListState.WriteStateAsync();
-
-            return customer;
+            _customerState.State = customer;
+            await _customerState.WriteStateAsync();
+            return _customerState.State;
         }
 
         public async Task<Customer> GetCustomer()
         {
-            var customerId = this.GetGrainIdentity().PrimaryKeyLong;
-            var customers = await GetCustomers();
-            var customer = customers.First(x => x.Id == customerId);
-            return customer;
+            await _customerState.ReadStateAsync();
+            return _customerState.State;
         }
 
-        public async Task<Customer[]> GetCustomers()
+        public async Task<Account> OpenAccount(Account account)
         {
-            await _customerListState.ReadStateAsync();
-            return _customerListState.State.ToArray();
-        }
+            if(account.Id == 0) // new account
+            {
+                account.Id = new Random().Next(10000, 99999);
+                account.CustomerId = this.GetGrainIdentity().PrimaryKeyLong;
+            }
 
-        public Task<Account[]> GetAccounts()
-        {
-            throw new NotImplementedException();
-        }
+            var accountGrain = this.GrainFactory.GetGrain<IAccountGrain>(account.Id);
+            account = await accountGrain.SaveAccount(account);
 
-        public Task<Transaction> GetTransactions()
-        {
-            throw new NotImplementedException();
+            return account;
         }
     }
 }

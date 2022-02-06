@@ -2,12 +2,10 @@
 
 namespace WoodgroveBank.Abstractions
 {
-    public interface ICustomerGrain : IGrainWithIntegerKey
+    public interface ICustomerGrain : IGrainWithGuidKey
     {
         Task<Customer> SaveCustomer(Customer customer);
-        Task<Customer[]> GetCustomers();
         Task<Customer> GetCustomer();
-        Task<Account[]> GetAccounts();
-        Task<Transaction> GetTransactions();
+        Task<Account> OpenAccount(Account account);
     }
 }

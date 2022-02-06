@@ -3,6 +3,7 @@
     "Intranet": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "customers",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ORLEANS_AZURE_STORAGE_CONNECTION_STRING": "UseDevelopmentStorage=true"

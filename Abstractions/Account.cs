@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public int CustomerId { get; set; }
+        public long CustomerId { get; set; }
         public decimal Balance { get; set; }
         public DateTime DateOpened { get; set; } = DateTime.MinValue;
         public DateTime DateOfLastActivity { get; set; } = DateTime.MinValue;

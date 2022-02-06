@@ -8,11 +8,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="OrleansDashboard" Version="3.6.1" />
+		<ProjectReference Include="..\Orleans.Azure.Infrastructure\Orleans.Azure.Infrastructure.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Orleans.Azure.Infrastructure\Orleans.Azure.Infrastructure.csproj" />
+	  <Folder Include="Properties\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="OrleansDashboard" Version="3.6.1" />
 	</ItemGroup>
 
 </Project>

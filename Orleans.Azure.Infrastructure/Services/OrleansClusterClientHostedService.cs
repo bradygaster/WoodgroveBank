@@ -10,7 +10,7 @@ namespace Orleans.Hosting
         private readonly ILogger<OrleansClusterClientHostedService> _logger;
         private readonly IConfiguration _configuration;
         private int _retries = 10;
-        public IClusterClient Client { get; set; } = null;
+        public IClusterClient Client { get; set; }
 
         public OrleansClusterClientHostedService(ILogger<OrleansClusterClientHostedService> logger, IConfiguration configuration)
         {

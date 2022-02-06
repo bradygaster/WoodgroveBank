@@ -44,11 +44,11 @@ else
 }
 
 @code {
-    Customer[] _customers;
+    Customer[]? _customers;
 
     protected override async Task OnInitializedAsync()
     {
-        var grain = _grainFactory.GetGrain<ICustomerGrain>(0);
+        var grain = _grainFactory.GetGrain<IBankGrain>(Guid.Empty);
         _customers = await grain.GetCustomers();
 
         await base.OnInitializedAsync();
