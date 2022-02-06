@@ -1,0 +1,28 @@
+﻿@page "/"
+@using Orleans
+@using WoodgroveBank.Abstractions
+@inject IGrainFactory _grainFactory;
+
+<PageTitle>Recent Transactions</PageTitle>
+
+<h1>Recent Transactions</h1>
+
+<p>The grid below shows the most recent transactions. It updates in real-time.</p>
+
+@if(_transations == null || !_transations.Any())
+{
+    <h3>No recent transactions.</h3>
+}
+
+@code
+{
+    Transaction[]? _transations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var grain = _grainFactory.GetGrain<IBankGrain>(Guid.Empty);
+        _transations = await grain.GetRecentTransactions();
+
+        await base.OnInitializedAsync();
+    }
+}

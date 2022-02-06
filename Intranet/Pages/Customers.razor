@@ -1,0 +1,27 @@
+﻿@page "/customers"
+@using Orleans
+@using WoodgroveBank.Abstractions
+@inject IGrainFactory _grainFactory;
+
+<PageTitle>Customers</PageTitle>
+
+<h1>Customers</h1>
+
+<p>Below are the recently-active customers. The grid updates in real-time.</p>
+
+@if(_customers == null || !_customers.Any())
+{
+    <h3>No recent customer activity.</h3>
+}
+
+@code {
+    Customer[] _customers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var grain = _grainFactory.GetGrain<IBankGrain>(Guid.Empty);
+        _customers = await grain.GetCustomers();
+
+        await base.OnInitializedAsync();
+    }
+}
