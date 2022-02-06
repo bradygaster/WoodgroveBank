@@ -7,46 +7,14 @@ namespace WoodgroveBank.Grains
 {
     public class BankGrain : Grain, IBankGrain
     {
-        private IPersistentState<List<Customer>> _customerListState { get; set; }
         private IPersistentState<List<Transaction>> _transactionListState { get; set; }
         private IPersistentState<List<Account>> _accountListState { get; set; }
 
-        public BankGrain([PersistentState("customers", Strings.OrleansPersistenceNames.CustomersStore)] IPersistentState<List<Customer>> customerListState,
-            [PersistentState("transactions", Strings.OrleansPersistenceNames.TransactionsStore)] IPersistentState<List<Transaction>> transactionListState,
+        public BankGrain([PersistentState("transactions", Strings.OrleansPersistenceNames.TransactionsStore)] IPersistentState<List<Transaction>> transactionListState,
             [PersistentState("accounts", Strings.OrleansPersistenceNames.AccountsStore)] IPersistentState<List<Account>> accountListState)
         {
-            _customerListState = customerListState;
             _transactionListState = transactionListState;
             _accountListState = accountListState;
-        }
-
-        public async Task<Customer> SaveCustomer(Customer customer)
-        {
-            if(customer.Id == 0) // new customer
-            {
-                customer.Id = new Random().Next(1000, 9999);
-                _customerListState.State.Add(customer);
-            }
-            else if(!_customerListState.State.Any(x => x.Id == customer.Id)) // unrecognized customer id
-            {
-                throw new Exception("Customer doesn't match any of our known customers.");
-            }
-            else // existing customer to update
-            {
-                _customerListState.State.First(x => x.Id == customer.Id).City = customer.City;
-                _customerListState.State.First(x => x.Id == customer.Id).Country = customer.Country;
-                _customerListState.State.First(x => x.Id == customer.Id).Name = customer.Name;
-            }
-
-            await _customerListState.WriteStateAsync();
-
-            return customer;
-        }
-
-        public async Task<Customer[]> GetCustomers()
-        {
-            await _customerListState.ReadStateAsync();
-            return _customerListState.State.ToArray();
         }
 
         public Task<Account> OpenAccount(string name, Customer customer, AccountType accountType, decimal amount)

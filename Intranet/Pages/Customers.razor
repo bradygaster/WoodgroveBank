@@ -48,7 +48,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var grain = _grainFactory.GetGrain<IBankGrain>(Guid.Empty);
+        var grain = _grainFactory.GetGrain<ICustomerGrain>(0);
         _customers = await grain.GetCustomers();
 
         await base.OnInitializedAsync();
