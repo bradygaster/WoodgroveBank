@@ -18,10 +18,14 @@ namespace WoodgroveBank.Infrastructure
                     .Configure<ClusterMembershipOptions>(options => options.ValidateInitialConnectivity = false);
 
                 siloBuilder
+                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.AccountTransactionsStore, options => options.ConfigureTableServiceClient(storageConnectionString))
+                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.AccountsStore, options => options.ConfigureTableServiceClient(storageConnectionString))
+                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.AccountStore, options => options.ConfigureTableServiceClient(storageConnectionString))
+                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.CustomerStore, options => options.ConfigureTableServiceClient(storageConnectionString))
+                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.CustomerAccountsStore, options => options.ConfigureTableServiceClient(storageConnectionString))
                     .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.CustomersStore, options => options.ConfigureTableServiceClient(storageConnectionString))
                     .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.TransactionsStore, options => options.ConfigureTableServiceClient(storageConnectionString))
-                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.AccountsStore, options => options.ConfigureTableServiceClient(storageConnectionString))
-                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.CustomerStore, options => options.ConfigureTableServiceClient(storageConnectionString));
+                    ;
 
                 if(useDashboard)
                 {

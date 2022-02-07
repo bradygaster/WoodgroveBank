@@ -2,9 +2,9 @@
 {
     public class Account
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; } = Guid.Empty;
         public string Name { get; set; } = string.Empty;
-        public long CustomerId { get; set; }
+        public Guid CustomerId { get; set; }
         public decimal Balance { get; set; }
         public DateTime DateOpened { get; set; } = DateTime.MinValue;
         public DateTime DateOfLastActivity { get; set; } = DateTime.MinValue;

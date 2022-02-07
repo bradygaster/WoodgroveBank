@@ -47,7 +47,7 @@ app.MapPost("/customers", async (IGrainFactory grainFactory, Customer customer) 
 /// <summary>
 /// Create a new account for a customer.
 /// </summary>
-app.MapPost("/customer/{id}/accounts", async (IGrainFactory grainFactory, Guid id, Account account) =>
+app.MapPost("/customers/{id}/accounts", async (IGrainFactory grainFactory, Guid id, Account account) =>
 {
     try
     {
@@ -64,6 +64,27 @@ app.MapPost("/customer/{id}/accounts", async (IGrainFactory grainFactory, Guid i
 .WithName("CreateAccount")
 .Produces(StatusCodes.Status409Conflict)
 .Produces<Account>(StatusCodes.Status201Created);
+
+/// <summary>
+/// Gets all of a customer's accounts.
+/// </summary>
+app.MapGet("/customers/{id}/accounts", async (IGrainFactory grainFactory, Guid id) =>
+{
+    var customerGrain = grainFactory.GetGrain<ICustomerGrain>(id);
+    return Results.Ok(await customerGrain.GetAccounts());
+})
+.WithName("GetCustomerAccounts")
+.Produces<List<Account>>();
+
+/// <summary>
+/// Gets all of a customer's transactions for an account.
+/// </summary>
+app.MapGet("/customers/{customerId}/accounts/{accountId}/transactions", (IGrainFactory grainFactory, string customerId, string accountId) =>
+{
+
+})
+.WithName("GetCustomerAccountTransactions")
+.Produces<List<Account>>();
 
 // run the api
 app.Run();

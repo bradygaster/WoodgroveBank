@@ -2,8 +2,8 @@
 {
     public class Transaction
     {
-        public int AccountId { get; set; }
-        public int CustomerId { get; set; }
+        public Guid AccountId { get; set; }
+        public Guid CustomerId { get; set; }
         public TransactionType TransactionType { get; set; }
         public decimal TransactionAmount { get; set; }
         public decimal InitialAccountBalance { get; set; }
