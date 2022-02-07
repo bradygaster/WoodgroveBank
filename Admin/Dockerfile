@@ -6,16 +6,16 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["Intranet/Intranet.csproj", "Intranet/"]
-RUN dotnet restore "Intranet/Intranet.csproj"
+COPY ["Admin/Admin.csproj", "Admin/"]
+RUN dotnet restore "Admin/Admin.csproj"
 COPY . .
-WORKDIR "/src/Intranet"
-RUN dotnet build "Intranet.csproj" -c Release -o /app/build
+WORKDIR "/src/Admin"
+RUN dotnet build "Admin.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Intranet.csproj" -c Release -o /app/publish
+RUN dotnet publish "Admin.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Intranet.dll"]
+ENTRYPOINT ["dotnet", "Admin.dll"]

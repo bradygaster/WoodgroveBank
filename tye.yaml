@@ -3,16 +3,24 @@ name: woodgrove-bank
 services:
 - name: api
   executable: dapr
-  args: run --app-id api --app-port 5001 -- dotnet run --project ./API.csproj --urls "http://localhost:5001"
+  args: run --app-id api --app-port 5001 -- dotnet run --project ./API.csproj --urls "http://localhost:5000"
   workingDirectory: ./API/
   bindings: 
-  - port: 5001 
+  - port: 5000
     protocol: http
 
 - name: atm
   executable: dapr
-  args: run --app-id atm --app-port 5002 -- dotnet run --project ./CustomerATM.csproj --urls "http://localhost:5002"
-  workingDirectory: ./CustomerATM/
+  args: run --app-id atm --app-port 5002 -- dotnet run --project ./ATM.csproj --urls "http://localhost:5001"
+  workingDirectory: ./ATM/
   bindings: 
-  - port: 5002 
+  - port: 5001
+    protocol: http
+
+- name: admin
+  executable: dapr
+  args: run --app-id admin --app-port 5002 -- dotnet run --project ./Admin.csproj --urls "http://localhost:5002"
+  workingDirectory: ./Admin/
+  bindings: 
+  - port: 5002
     protocol: http

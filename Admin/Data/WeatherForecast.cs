@@ -1,4 +1,4 @@
-namespace Intranet.Data
+namespace Admin.Data
 {
     public class WeatherForecast
     {
