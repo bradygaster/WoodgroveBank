@@ -5,22 +5,30 @@ VisualStudioVersion = 17.1.32119.435
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Abstractions", "Abstractions\Abstractions.csproj", "{B3A6D6C8-DED9-48A9-AA93-D329CA790799}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FF0A8259-FE8F-4863-B07D-B348D3A277BB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{FF0A8259-FE8F-4863-B07D-B348D3A277BB}"
 	ProjectSection(SolutionItems) = preProject
 		readme.md = readme.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Azure.Infrastructure", "Orleans.Azure.Infrastructure\Orleans.Azure.Infrastructure.csproj", "{6967F46C-D389-4797-9003-13A3C9F959B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grains", "Grains\Grains.csproj", "{F59CEEA4-78B1-4A16-A848-B3926C6A146B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Grains", "Grains\Grains.csproj", "{F59CEEA4-78B1-4A16-A848-B3926C6A146B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Intranet", "Intranet\Intranet.csproj", "{FDA3A4A4-C2B5-46A8-AF9C-311DAE9C031E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Intranet", "Intranet\Intranet.csproj", "{FDA3A4A4-C2B5-46A8-AF9C-311DAE9C031E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{49F292BF-DEC0-43E3-B5D2-CCDC15201ADC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{49F292BF-DEC0-43E3-B5D2-CCDC15201ADC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{F995A8BE-434B-49A5-83E7-6EEF854BEA02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "API\API.csproj", "{F995A8BE-434B-49A5-83E7-6EEF854BEA02}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BogusGenerator", "BogusGenerator\BogusGenerator.csproj", "{2D070D9C-C51C-4885-BA62-17FF0AD3A5F0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infra", "Infra", "{00E20A0A-A9B0-413D-AC61-BA396DED3F06}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{0621ACC9-E0B7-4930-B8BF-858C7EADC207}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BusinessLogic", "BusinessLogic", "{59A42D01-77D5-4963-99AB-44A6E5D3420C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{7778468C-E7E1-4D6C-9094-ADE987299045}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +67,15 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B3A6D6C8-DED9-48A9-AA93-D329CA790799} = {59A42D01-77D5-4963-99AB-44A6E5D3420C}
+		{6967F46C-D389-4797-9003-13A3C9F959B5} = {00E20A0A-A9B0-413D-AC61-BA396DED3F06}
+		{F59CEEA4-78B1-4A16-A848-B3926C6A146B} = {59A42D01-77D5-4963-99AB-44A6E5D3420C}
+		{FDA3A4A4-C2B5-46A8-AF9C-311DAE9C031E} = {0621ACC9-E0B7-4930-B8BF-858C7EADC207}
+		{49F292BF-DEC0-43E3-B5D2-CCDC15201ADC} = {00E20A0A-A9B0-413D-AC61-BA396DED3F06}
+		{F995A8BE-434B-49A5-83E7-6EEF854BEA02} = {0621ACC9-E0B7-4930-B8BF-858C7EADC207}
+		{2D070D9C-C51C-4885-BA62-17FF0AD3A5F0} = {7778468C-E7E1-4D6C-9094-ADE987299045}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0F294DB6-AA0D-4B66-BCFC-DEE836E0099A}
