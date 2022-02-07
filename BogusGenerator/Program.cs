@@ -8,7 +8,7 @@ Console.ReadLine();
 
 var apiClient = new WoodgroveBankApi();
 
-for (int i = 0; i < 3; i++)
+for (int i = 0; i < 20; i++)
 {
     var customerId = Guid.NewGuid();
     var faker = new Faker<Customer>()
@@ -21,7 +21,7 @@ for (int i = 0; i < 3; i++)
 
     await apiClient.CreateCustomer(fakeCustomer);
 
-    await apiClient.CreateAccount(new Account
+    var checking = new Account
     {
         Type = AccountType.Checking,
         Name = "Checking",
@@ -30,9 +30,10 @@ for (int i = 0; i < 3; i++)
         DateOfLastActivity = DateTime.Now,
         DateOpened = DateTime.Now,
         Id = Guid.NewGuid()
-    });
+    };
+    await apiClient.CreateAccount(checking);
 
-    await apiClient.CreateAccount(new Account
+    var savings = new Account
     {
         Type = AccountType.Savings,
         Name = "Savings",
@@ -41,7 +42,8 @@ for (int i = 0; i < 3; i++)
         DateOfLastActivity = DateTime.Now,
         DateOpened = DateTime.Now,
         Id = Guid.NewGuid()
-    });
+    };
+    await apiClient.CreateAccount(savings);
 }
 
 var customers = await apiClient.GetCustomers();

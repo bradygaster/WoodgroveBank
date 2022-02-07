@@ -18,25 +18,23 @@ else
     <table class="table">
         <thead>
             <tr>
+                <th>Actions</th>
                 <th>Customer Name</th>
                 <th>City</th>
                 <th>Country</th>
-                <th>Customer ID</th>
-                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach(var customer in _customers)
             {
                 <tr>
-                    <td>@customer.Name</td>
-                    <td>@customer.City</td>
-                    <td>@customer.Country</td>
-                    <td>@customer.Id</td>
                     <td>
                         <button class="btn btn-primary">Accounts</button>
                         <button class="btn btn-primary">Transactions</button>
                     </td>
+                    <td>@customer.Name</td>
+                    <td>@customer.City</td>
+                    <td>@customer.Country</td>
                 </tr>
             }
         </tbody>
