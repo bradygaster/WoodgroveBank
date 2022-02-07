@@ -5,7 +5,7 @@ using WoodgroveBank.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.AddWoodvilleBankSilo();
+builder.AddWoodvilleBankSilo(useDashboard: true);
 
 var app = builder.Build();
 
@@ -22,6 +22,7 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/customers", async (IGrainFactory grainFactory) =>
     await grainFactory.GetGrain<IBankGrain>(Guid.Empty).GetCustomers()
 )
+.WithTags("Customers")
 .WithName("GetCustomers");
 
 /// <summary>
@@ -40,6 +41,7 @@ app.MapPost("/customers", async (IGrainFactory grainFactory, Customer customer) 
         return Results.Conflict(ex.Message);
     }
 })
+.WithTags("Customers")
 .WithName("CreateCustomer")
 .Produces(StatusCodes.Status409Conflict)
 .Produces<Customer>(StatusCodes.Status201Created);
@@ -52,19 +54,19 @@ app.MapGet("/customers/{id}/accounts", async (IGrainFactory grainFactory, Guid i
     var customerGrain = grainFactory.GetGrain<ICustomerGrain>(id);
     return Results.Ok(await customerGrain.GetAccounts());
 })
+.WithTags("Accounts")
 .WithName("GetCustomerAccounts")
 .Produces<List<Account>>();
 
 /// <summary>
 /// Create a new account for a customer.
 /// </summary>
-app.MapPost("/customers/{id}/accounts", async (IGrainFactory grainFactory, Guid id, Account account) =>
+app.MapPost("/accounts", async (IGrainFactory grainFactory, Account account) =>
 {
     try
     {
-        var customerGrain = grainFactory.GetGrain<ICustomerGrain>(id);
+        var customerGrain = grainFactory.GetGrain<ICustomerGrain>(account.CustomerId);
         account = await customerGrain.OpenAccount(account);
-
         return Results.Created($"/accounts/{account.Id}", account);
     }
     catch (Exception ex)
@@ -72,6 +74,7 @@ app.MapPost("/customers/{id}/accounts", async (IGrainFactory grainFactory, Guid 
         return Results.Conflict(ex.Message);
     }
 })
+.WithTags("Accounts")
 .WithName("CreateAccount")
 .Produces(StatusCodes.Status409Conflict)
 .Produces<Account>(StatusCodes.Status201Created);
@@ -79,13 +82,14 @@ app.MapPost("/customers/{id}/accounts", async (IGrainFactory grainFactory, Guid 
 /// <summary>
 /// Submits a deposit to a customer account.
 /// </summary>
-app.MapPost("/customers/{customerId}/accounts/{accountId}/deposit/", 
-    async (IGrainFactory grainFactory, Guid customerId, Guid accountId, decimal amount) =>
+app.MapPost("/accounts/{accountId}/deposit/", 
+    async (IGrainFactory grainFactory, Guid accountId, decimal amount) =>
 {
     var result = await grainFactory.GetGrain<IAccountGrain>(accountId).Deposit(amount);
     if (result) return Results.Ok();
     return Results.Unauthorized();
 })
+.WithTags("Accounts")
 .WithName("SubmitDeposit")
 .Produces(StatusCodes.Status200OK)
 .Produces(StatusCodes.Status401Unauthorized);
@@ -93,13 +97,14 @@ app.MapPost("/customers/{customerId}/accounts/{accountId}/deposit/",
 /// <summary>
 /// Submits a withdrawal to a customer account.
 /// </summary>
-app.MapPost("/customers/{customerId}/accounts/{accountId}/withdraw", 
-    async (IGrainFactory grainFactory, Guid customerId, Guid accountId, decimal amount) =>
+app.MapPost("/accounts/{accountId}/withdraw", 
+    async (IGrainFactory grainFactory, Guid accountId, decimal amount) =>
 {
     var result = await grainFactory.GetGrain<IAccountGrain>(accountId).Withdraw(amount);
     if(result) return Results.Ok();
     return Results.Unauthorized();
 })
+.WithTags("Accounts")
 .WithName("SubmitWithdrawal")
 .Produces(StatusCodes.Status200OK)
 .Produces(StatusCodes.Status401Unauthorized);
@@ -112,6 +117,7 @@ app.MapGet("/accounts/{accountId}/transactions", async (IGrainFactory grainFacto
     var result = await grainFactory.GetGrain<IAccountGrain>(accountId).GetTransactions();
     return Results.Ok(result);
 })
+.WithTags("Accounts")
 .WithName("GetTransactions")
 .Produces<List<Transaction>>();
 

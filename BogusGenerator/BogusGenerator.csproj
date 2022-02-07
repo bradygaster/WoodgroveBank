@@ -9,9 +9,11 @@
 
   <ItemGroup>
     <PackageReference Include="Bogus" Version="34.0.1" />
+    <PackageReference Include="Refit" Version="6.2.16" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Abstractions\Abstractions.csproj" />
     <ProjectReference Include="..\API\API.csproj" />
     <ProjectReference Include="..\Grains\Grains.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />

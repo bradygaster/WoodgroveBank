@@ -1,4 +1,6 @@
-﻿namespace WoodgroveBank.Abstractions
+﻿using System.Text.Json.Serialization;
+
+namespace WoodgroveBank.Abstractions
 {
     public class Account
     {
@@ -12,12 +14,14 @@
         public AccountType Type { get; set; } = AccountType.Checking;
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum AccountType
     {
         Checking = 0,
         Savings = 1
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum AccountStatus
     {
         InGoodStanding = 0,
