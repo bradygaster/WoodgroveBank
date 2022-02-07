@@ -77,14 +77,55 @@ app.MapGet("/customers/{id}/accounts", async (IGrainFactory grainFactory, Guid i
 .Produces<List<Account>>();
 
 /// <summary>
+/// Submits a deposit to a customer account.
+/// </summary>
+app.MapPost("/customers/{customerId}/accounts/{accountId}/deposit/", 
+    async (IGrainFactory grainFactory, Guid customerId, Guid accountId, decimal amount) =>
+{
+    var result = await grainFactory.GetGrain<IAccountGrain>(accountId).Deposit(amount);
+    if (result)
+    {
+        return Results.Ok();
+    }
+    else
+    {
+        return Results.Unauthorized();
+    }
+})
+.WithName("SubmitDeposit")
+.Produces(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status401Unauthorized);
+
+/// <summary>
+/// Submits a withdrawal to a customer account.
+/// </summary>
+app.MapPost("/customers/{customerId}/accounts/{accountId}/withdraw", 
+    async (IGrainFactory grainFactory, Guid customerId, Guid accountId, decimal amount) =>
+{
+    var result = await grainFactory.GetGrain<IAccountGrain>(accountId).Withdraw(amount);
+    if(result)
+    {
+        return Results.Ok();
+    }
+    else
+    {
+        return Results.Unauthorized();
+    }
+})
+.WithName("SubmitWithdrawal")
+.Produces(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status401Unauthorized);
+
+/// <summary>
 /// Gets all of a customer's transactions for an account.
 /// </summary>
-app.MapGet("/customers/{customerId}/accounts/{accountId}/transactions", (IGrainFactory grainFactory, string customerId, string accountId) =>
+app.MapGet("/accounts/{accountId}/transactions", async (IGrainFactory grainFactory, Guid accountId) =>
 {
-
+    var result = await grainFactory.GetGrain<IAccountGrain>(accountId).GetTransactions();
+    return Results.Ok(result);
 })
-.WithName("GetCustomerAccountTransactions")
-.Produces<List<Account>>();
+.WithName("GetTransactions")
+.Produces<List<Transaction>>();
 
 // run the api
 app.Run();
