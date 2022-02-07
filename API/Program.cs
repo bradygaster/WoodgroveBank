@@ -45,6 +45,17 @@ app.MapPost("/customers", async (IGrainFactory grainFactory, Customer customer) 
 .Produces<Customer>(StatusCodes.Status201Created);
 
 /// <summary>
+/// Gets all of a customer's accounts.
+/// </summary>
+app.MapGet("/customers/{id}/accounts", async (IGrainFactory grainFactory, Guid id) =>
+{
+    var customerGrain = grainFactory.GetGrain<ICustomerGrain>(id);
+    return Results.Ok(await customerGrain.GetAccounts());
+})
+.WithName("GetCustomerAccounts")
+.Produces<List<Account>>();
+
+/// <summary>
 /// Create a new account for a customer.
 /// </summary>
 app.MapPost("/customers/{id}/accounts", async (IGrainFactory grainFactory, Guid id, Account account) =>
@@ -66,31 +77,14 @@ app.MapPost("/customers/{id}/accounts", async (IGrainFactory grainFactory, Guid 
 .Produces<Account>(StatusCodes.Status201Created);
 
 /// <summary>
-/// Gets all of a customer's accounts.
-/// </summary>
-app.MapGet("/customers/{id}/accounts", async (IGrainFactory grainFactory, Guid id) =>
-{
-    var customerGrain = grainFactory.GetGrain<ICustomerGrain>(id);
-    return Results.Ok(await customerGrain.GetAccounts());
-})
-.WithName("GetCustomerAccounts")
-.Produces<List<Account>>();
-
-/// <summary>
 /// Submits a deposit to a customer account.
 /// </summary>
 app.MapPost("/customers/{customerId}/accounts/{accountId}/deposit/", 
     async (IGrainFactory grainFactory, Guid customerId, Guid accountId, decimal amount) =>
 {
     var result = await grainFactory.GetGrain<IAccountGrain>(accountId).Deposit(amount);
-    if (result)
-    {
-        return Results.Ok();
-    }
-    else
-    {
-        return Results.Unauthorized();
-    }
+    if (result) return Results.Ok();
+    return Results.Unauthorized();
 })
 .WithName("SubmitDeposit")
 .Produces(StatusCodes.Status200OK)
@@ -103,14 +97,8 @@ app.MapPost("/customers/{customerId}/accounts/{accountId}/withdraw",
     async (IGrainFactory grainFactory, Guid customerId, Guid accountId, decimal amount) =>
 {
     var result = await grainFactory.GetGrain<IAccountGrain>(accountId).Withdraw(amount);
-    if(result)
-    {
-        return Results.Ok();
-    }
-    else
-    {
-        return Results.Unauthorized();
-    }
+    if(result) return Results.Ok();
+    return Results.Unauthorized();
 })
 .WithName("SubmitWithdrawal")
 .Produces(StatusCodes.Status200OK)
