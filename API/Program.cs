@@ -5,7 +5,7 @@ using WoodgroveBank.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.AddWoodvilleBankSilo(useDashboard: true);
+builder.AddWoodvilleBankSilo();
 
 var app = builder.Build();
 
@@ -120,6 +120,24 @@ app.MapGet("/accounts/{accountId}/transactions", async (IGrainFactory grainFacto
 .WithTags("Accounts")
 .WithName("GetTransactions")
 .Produces<List<Transaction>>();
+
+/// <summary>
+/// Signs a customer in using their ID.
+/// </summary>
+app.MapGet("/atm/signin/{customerPin}", async (IGrainFactory grainFactory, string customerPin) =>
+{
+    var customer = await grainFactory.GetGrain<IBankGrain>(Guid.Empty).AuthenticateCustomer(customerPin);
+    if(customer == null)
+    {
+        return Results.Unauthorized();
+    }
+
+    return Results.Ok(customer);
+})
+.WithTags("ATM")
+.WithName("SignIn")
+.Produces<Customer>(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status401Unauthorized);
 
 // run the api
 app.Run();
