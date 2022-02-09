@@ -37,5 +37,10 @@ namespace WoodgroveBank.Grains
             return Task.FromResult(_transactionListState.State.OrderBy(x => x.Timestamp).ToArray());
         }
 
+        public async Task<Customer> AuthenticateCustomer(string pin)
+        {
+            await _customerIndex.ReadStateAsync();
+            return _customerIndex.State.FirstOrDefault(x => x.Pin == pin);
+        }
     }
 }

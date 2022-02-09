@@ -15,6 +15,7 @@ for (int i = 0; i < 20; i++)
         .RuleFor(p => p.Id, f => customerId)
         .RuleFor(p => p.Name, f => f.Name.FullName())
         .RuleFor(p => p.Country, f => f.Address.Country())
+        .RuleFor(p => p.Pin, new Random().Next(1000, 9999).ToString())
         .RuleFor(p => p.City, f => $"{f.Address.City()}, {f.Address.State()}");
 
     var fakeCustomer = faker.Generate();
@@ -58,9 +59,11 @@ Console.ReadLine();
 
 public class WoodgroveBankApi : IWoodgroveBankApi
 {
+    const string URI = "http://localhost:5000";
+
     public async Task CreateAccount(Account account)
     {
-        await RestService.For<IWoodgroveBankApi>("http://localhost:5001",
+        await RestService.For<IWoodgroveBankApi>(URI,
             new RefitSettings
             {
                 ContentSerializer = new SystemTextJsonContentSerializer()
@@ -71,7 +74,7 @@ public class WoodgroveBankApi : IWoodgroveBankApi
     {
         await RestService.For<IWoodgroveBankApi>(new HttpClient()
         {
-            BaseAddress = new Uri("http://localhost:5001")
+            BaseAddress = new Uri(URI)
         }).CreateCustomer(customer);
     }
 
@@ -79,8 +82,16 @@ public class WoodgroveBankApi : IWoodgroveBankApi
     {
         return await RestService.For<IWoodgroveBankApi>(new HttpClient()
         {
-            BaseAddress = new Uri("http://localhost:5001")
+            BaseAddress = new Uri(URI)
         }).GetCustomers();
+    }
+
+    public async Task<Customer> SignIn(string customerPin)
+    {
+        return await RestService.For<IWoodgroveBankApi>(new HttpClient()
+        {
+            BaseAddress = new Uri(URI)
+        }).SignIn(customerPin);
     }
 }
 
@@ -94,4 +105,7 @@ public interface IWoodgroveBankApi
 
     [Post("/accounts")]
     Task CreateAccount(Account account);
+
+    [Get("/atm/signin/{customerPin}")]
+    Task<Customer> SignIn(string customerPin);
 }
