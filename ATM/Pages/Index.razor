@@ -1,62 +1,95 @@
 ﻿@page "/"
+@inject ATM.ApiClient.WoodgroveBankAPIClient _woodgroveBankApiClient;
 
 <PageTitle>Woodgrove Bank ATM</PageTitle>
 
 <div class="container">
-    <div id="output"></div>
+    <div id="output">@_pinCode</div>
     <div class="row">
-        <div class="digit" id="one">1</div>
-        <div class="digit" id="two">
+        @_message
+    </div>
+    <div class="row">
+        <div class="digit" id="one" @onclick='() => AppendPin("1")'>1</div>
+        <div class="digit" id="two" @onclick='() => AppendPin("2")'>
             2
             <div class="sub">ABC</div>
         </div>
-        <div class="digit" id="three">
+        <div class="digit" id="three" @onclick='() => AppendPin("3")'>
             3
             <div class="sub">DEF</div>
         </div>
     </div>
     <div class="row">
-        <div class="digit" id="four">
+        <div class="digit" id="four" @onclick='() => AppendPin("4")'>
             4
             <div class="sub">GHI</div>
         </div>
-        <div class="digit" id="five">
+        <div class="digit" id="five" @onclick='() => AppendPin("5")'>
             5
             <div class="sub">JKL</div>
         </div>
-        <div class="digit">
+        <div class="digit" @onclick='() => AppendPin("6")'>
             6
             <div class="sub">MNO</div>
         </div>
     </div>
     <div class="row">
-        <div class="digit">
+        <div class="digit" @onclick='() => AppendPin("7")'>
             7
             <div class="sub">PQRS</div>
         </div>
-        <div class="digit">
+        <div class="digit" @onclick='() => AppendPin("8")'>
             8
             <div class="sub">TUV</div>
         </div>
-        <div class="digit">
+        <div class="digit" @onclick='() => AppendPin("9")'>
             9
             <div class="sub">WXYZ</div>
         </div>
     </div>
     <div class="row">
         <div class="digit">
-            *
+            &nbsp;
         </div>
-        <div class="digit">
+        <div class="digit" @onclick='() => AppendPin("0")'>
             0
         </div>
         <div class="digit">
-            #
+            &nbsp;
         </div>
     </div>
     <div class="botrow">
+        <i class="fa fa-long-arrow-left dig" aria-hidden="true" @onclick='() => Backspace()'></i>
+        <div id="call" @onclick='() => SignIn()'><i class="fa fa-key" aria-hidden="true"></i></div>
         <i class="fa fa-star-o dig" aria-hidden="true"></i>
-        <div id="call"><i class="fa fa-key" aria-hidden="true"></i></div>
-        <i class="fa fa-long-arrow-left dig" aria-hidden="true"></i>
     </div>
 </div>
+
+@code {
+    string _pinCode = "";
+    string _message = "Login using your pin code.";
+
+    protected void AppendPin(string stringToAppend)
+    {
+        _pinCode += stringToAppend;
+    }
+
+    protected void Backspace()
+    {
+        if(_pinCode.Length >= 1)
+            _pinCode = _pinCode.Substring(0, _pinCode.Length - 1);
+    }
+
+    protected async Task SignIn()
+    {
+        var customer = await _woodgroveBankApiClient.SignIn(_pinCode);
+        if(customer == null)
+        {
+            _message = "Invalid pin code.";
+        }
+        else
+        {
+            _message = $"Welcome, {customer.Name}";
+        }
+    }
+}
