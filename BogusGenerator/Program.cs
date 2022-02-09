@@ -2,60 +2,75 @@
 using Refit;
 using WoodgroveBank.Abstractions;
 
+var createRandomCustomers = async () =>
+{
+    var apiClient = new WoodgroveBankApi();
+
+    for (int i = 0; i < 5; i++)
+    {
+        var customerId = Guid.NewGuid();
+        var faker = new Faker<Customer>()
+            .RuleFor(p => p.Id, f => customerId)
+            .RuleFor(p => p.Name, f => f.Name.FullName())
+            .RuleFor(p => p.Country, f => f.Address.Country())
+            .RuleFor(p => p.Pin, new Random().Next(1000, 9999).ToString())
+            .RuleFor(p => p.City, f => $"{f.Address.City()}, {f.Address.State()}");
+
+        var fakeCustomer = faker.Generate();
+
+        Console.WriteLine($"Creating customer {fakeCustomer.Name} in {fakeCustomer.City} in {fakeCustomer.Country}");
+        await apiClient.CreateCustomer(fakeCustomer);
+
+        var checking = new Account
+        {
+            Type = AccountType.Checking,
+            Name = "Checking",
+            CustomerId = customerId,
+            Balance = new Random().Next(1000, 1350),
+            DateOfLastActivity = DateTime.Now,
+            DateOpened = DateTime.Now,
+            Id = Guid.NewGuid()
+        };
+
+        var savings = new Account
+        {
+            Type = AccountType.Savings,
+            Name = "Savings",
+            CustomerId = customerId,
+            Balance = new Random().Next(2000, 5000),
+            DateOfLastActivity = DateTime.Now,
+            DateOpened = DateTime.Now,
+            Id = Guid.NewGuid()
+        };
+
+        Console.WriteLine($"Creating account {checking.Name} for customer {fakeCustomer.Name} with a balance of {checking.Balance}.");
+        await apiClient.CreateAccount(checking);
+
+        Console.WriteLine($"Creating account {savings.Name} for customer {fakeCustomer.Name} with a balance of {savings.Balance}.");
+        await apiClient.CreateAccount(savings);
+    }
+};
+
+var askToRepeat = () =>
+{
+    Console.WriteLine("Finished. Would you like me to repeat? (Y/n)");
+    var repeat = Console.ReadLine();
+    if (string.IsNullOrEmpty(repeat)) repeat = "y";
+    return repeat;
+};
+
 Console.WriteLine("Ready to connect to the Woodgrove Bank API.");
 Console.WriteLine("Hit enter when server is up.");
 Console.ReadLine();
 
-var apiClient = new WoodgroveBankApi();
+await createRandomCustomers();
 
-for (int i = 0; i < 20; i++)
+var repeat = askToRepeat();
+while (repeat.ToLower() == "y")
 {
-    var customerId = Guid.NewGuid();
-    var faker = new Faker<Customer>()
-        .RuleFor(p => p.Id, f => customerId)
-        .RuleFor(p => p.Name, f => f.Name.FullName())
-        .RuleFor(p => p.Country, f => f.Address.Country())
-        .RuleFor(p => p.Pin, new Random().Next(1000, 9999).ToString())
-        .RuleFor(p => p.City, f => $"{f.Address.City()}, {f.Address.State()}");
-
-    var fakeCustomer = faker.Generate();
-
-    await apiClient.CreateCustomer(fakeCustomer);
-
-    var checking = new Account
-    {
-        Type = AccountType.Checking,
-        Name = "Checking",
-        CustomerId = customerId,
-        Balance = new Random().Next(1000, 1350),
-        DateOfLastActivity = DateTime.Now,
-        DateOpened = DateTime.Now,
-        Id = Guid.NewGuid()
-    };
-    await apiClient.CreateAccount(checking);
-
-    var savings = new Account
-    {
-        Type = AccountType.Savings,
-        Name = "Savings",
-        CustomerId = customerId,
-        Balance = new Random().Next(2000, 5000),
-        DateOfLastActivity = DateTime.Now,
-        DateOpened = DateTime.Now,
-        Id = Guid.NewGuid()
-    };
-    await apiClient.CreateAccount(savings);
+    await createRandomCustomers();
+    repeat = askToRepeat();
 }
-
-var customers = await apiClient.GetCustomers();
-
-foreach (var customer in customers)
-{
-    Console.WriteLine($"Customer {customer.Name} lives in {customer.City} in {customer.Country}");
-}
-
-Console.WriteLine("Finished");
-Console.ReadLine();
 
 public class WoodgroveBankApi : IWoodgroveBankApi
 {
