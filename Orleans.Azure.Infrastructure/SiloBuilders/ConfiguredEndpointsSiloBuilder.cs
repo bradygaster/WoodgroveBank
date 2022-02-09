@@ -35,12 +35,39 @@ namespace Orleans.Hosting
                     options.SiloPort = siloPort;
                     options.GatewayPort = gatewayPort;
 
-                    var siloHostEntry = Dns.GetHostEntry(Environment.MachineName);
-                    options.AdvertisedIPAddress = siloHostEntry.AddressList[0];
+                    if(!IsLocalIpAddress(Environment.MachineName))
+                    {
+                        var siloHostEntry = Dns.GetHostEntry(Environment.MachineName);
+                        options.AdvertisedIPAddress = siloHostEntry.AddressList[0];
+                    }
+                    else
+                    {
+                        options.AdvertisedIPAddress = IPAddress.Loopback;
+                    }
                 });
             }
 
             base.Build(siloBuilder, configuration);
+        }
+
+        public static bool IsLocalIpAddress(string host)
+        {
+            try
+            {
+                IPAddress[] hostIPs = Dns.GetHostAddresses(host);
+                IPAddress[] localIPs = Dns.GetHostAddresses(Dns.GetHostName());
+
+                foreach (IPAddress hostIP in hostIPs)
+                {
+                    if (IPAddress.IsLoopback(hostIP)) return true;
+                    foreach (IPAddress localIP in localIPs)
+                    {
+                        if (hostIP.Equals(localIP)) return true;
+                    }
+                }
+            }
+            catch { }
+            return false;
         }
     }
 }

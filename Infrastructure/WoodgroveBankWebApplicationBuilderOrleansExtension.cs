@@ -9,14 +9,8 @@ namespace WoodgroveBank.Infrastructure
         public static WebApplicationBuilder AddWoodvilleBankSilo(this WebApplicationBuilder webApplicationBuilder, bool useDashboard = false)
         {
             var storageConnectionString = webApplicationBuilder.Configuration.GetValue<string>(EnvironmentVariables.AzureStorageConnectionString);
-            webApplicationBuilder.Host.UseOrleans(siloBuilder => 
+            webApplicationBuilder.AddOrleansSilo(siloBuilder =>
             {
-                siloBuilder
-                    .UseLocalhostClustering();
-
-                siloBuilder
-                    .Configure<ClusterMembershipOptions>(options => options.ValidateInitialConnectivity = false);
-
                 siloBuilder
                     .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.AccountTransactionsStore, options => options.ConfigureTableServiceClient(storageConnectionString))
                     .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.AccountsStore, options => options.ConfigureTableServiceClient(storageConnectionString))
