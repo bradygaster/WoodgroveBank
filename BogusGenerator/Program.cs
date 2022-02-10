@@ -75,10 +75,19 @@ while (repeat.ToLower() == "y")
 public class WoodgroveBankApi : IWoodgroveBankApi
 {
     const string URI = "http://localhost:5000";
+    HttpClient _httpClient;
+
+    public WoodgroveBankApi()
+    {
+        _httpClient = new HttpClient()
+        {
+            BaseAddress = new Uri(URI)
+        };
+    }
 
     public async Task CreateAccount(Account account)
     {
-        await RestService.For<IWoodgroveBankApi>(URI,
+        await RestService.For<IWoodgroveBankApi>(_httpClient,
             new RefitSettings
             {
                 ContentSerializer = new SystemTextJsonContentSerializer()
@@ -87,26 +96,17 @@ public class WoodgroveBankApi : IWoodgroveBankApi
 
     public async Task CreateCustomer(Customer customer)
     {
-        await RestService.For<IWoodgroveBankApi>(new HttpClient()
-        {
-            BaseAddress = new Uri(URI)
-        }).CreateCustomer(customer);
+        await RestService.For<IWoodgroveBankApi>(_httpClient).CreateCustomer(customer);
     }
 
     public async Task<Customer[]> GetCustomers()
     {
-        return await RestService.For<IWoodgroveBankApi>(new HttpClient()
-        {
-            BaseAddress = new Uri(URI)
-        }).GetCustomers();
+        return await RestService.For<IWoodgroveBankApi>(_httpClient).GetCustomers();
     }
 
     public async Task<Customer> SignIn(string customerPin)
     {
-        return await RestService.For<IWoodgroveBankApi>(new HttpClient()
-        {
-            BaseAddress = new Uri(URI)
-        }).SignIn(customerPin);
+        return await RestService.For<IWoodgroveBankApi>(_httpClient).SignIn(customerPin);
     }
 }
 

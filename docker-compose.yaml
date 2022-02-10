@@ -1,0 +1,40 @@
+version: '3.4' 
+
+services:
+
+  admin:
+    image: admin:latest
+    build:
+      context: .
+      dockerfile: Admin/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    hostname: admin
+    ports:
+      - 5001:80
+      - 11111:11111
+      - 30000:30000
+
+  api:
+    image: api:latest
+    build:
+      context: .
+      dockerfile: API/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    hostname: api
+    ports:
+      - 5000:80
+      - 11112:11112
+      - 30001:30001
+
+  # atm:
+  #   image: atm:latest
+  #   build:
+  #     context: .
+  #     dockerfile: ATM/Dockerfile
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #   hostname: atm
+  #   ports:
+  #     - 5002:80

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Scaler": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:5003;https://localhost:5004",
+      "dotnetRunMessages": true
+    }
+  }
+}

@@ -9,14 +9,14 @@ namespace Orleans.Hosting
         {
             // registry meta
             var clusterOptionsBuilder = new ClusterNameSiloBuilder();
-            var siloOptionsBuilder = new SiloNameBuilder();
+            var siloOptionsBuilder = new SiloNameSiloBuilder();
 
             // storage
-            var tableStorageBuilder = new TableStorageSiloBuilder();
+            var tableStorageBuilder = new AzureTableStorageClusteringSiloBuilder();
 
             // endpoints
             var webAppSiloBuilder = new WebAppsVirtualNetworkEndpointsSiloBuilder();
-            var configuredEndpointsBuilder = new ConfiguredEndpointsSiloBuilder();
+            var configuredEndpointsBuilder = new SiloEndpointsSiloBuilder();
 
             // monitoring
             var appInsightsBuilder = new AzureApplicationInsightsSiloBuilder();

@@ -2,7 +2,7 @@
 
 namespace Orleans.Hosting
 {
-    public class TableStorageSiloBuilder : AzureSiloBuilder
+    public class AzureTableStorageClusteringSiloBuilder : AzureSiloBuilder
     {
         public override void Build(ISiloBuilder siloBuilder, IConfiguration configuration)
         {

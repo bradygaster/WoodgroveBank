@@ -3,7 +3,7 @@ using Orleans.Configuration;
 
 namespace Orleans.Hosting
 {
-    public class SiloNameBuilder : AzureSiloBuilder
+    public class SiloNameSiloBuilder : AzureSiloBuilder
     {
         public override void Build(ISiloBuilder siloBuilder, IConfiguration configuration)
         {
