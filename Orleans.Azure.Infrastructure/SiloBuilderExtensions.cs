@@ -15,7 +15,7 @@ namespace Orleans.Hosting
             var tableStorageBuilder = new AzureTableStorageClusteringSiloBuilder();
 
             // endpoints
-            var webAppSiloBuilder = new WebAppsVirtualNetworkEndpointsSiloBuilder();
+            var webAppSiloBuilder = new AzureAppServiceSiloBuilder();
             var configuredEndpointsBuilder = new SiloEndpointsSiloBuilder();
 
             // monitoring
@@ -25,11 +25,23 @@ namespace Orleans.Hosting
             var localhostBuilder = new LocalhostSiloBuilder();
 
             // set up the chain of responsibility
+
+            // name the cluster & service
             clusterOptionsBuilder.SetNextBuilder(siloOptionsBuilder);
+
+            // name the silo
             siloOptionsBuilder.SetNextBuilder(tableStorageBuilder);
+
+            // wire up storage clustering if so configured
             tableStorageBuilder.SetNextBuilder(webAppSiloBuilder);
+
+            // set up the endpoints according the Azure App Service, if detected
             webAppSiloBuilder.SetNextBuilder(configuredEndpointsBuilder);
+
+            // set up the silo's endpoints (if not Kubernetes or Azure App Service)
             configuredEndpointsBuilder.SetNextBuilder(appInsightsBuilder);
+
+            // extras
             appInsightsBuilder.SetNextBuilder(localhostBuilder);
 
             // build the silo

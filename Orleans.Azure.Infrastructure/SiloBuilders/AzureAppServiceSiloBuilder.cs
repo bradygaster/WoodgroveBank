@@ -3,7 +3,7 @@ using System.Net;
 
 namespace Orleans.Hosting
 {
-public class WebAppsVirtualNetworkEndpointsSiloBuilder : AzureSiloBuilder
+public class AzureAppServiceSiloBuilder : AzureSiloBuilder
 {
     public override void Build(ISiloBuilder siloBuilder, IConfiguration configuration)
     {

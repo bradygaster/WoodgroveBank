@@ -15,10 +15,9 @@ namespace Orleans.Hosting
             
                 In that scenario, the WebAppsVirtualNetworkEndpointBuilder 
                 configures the silo's endpoints.
-            */ 
+            */
 
-            if (string.IsNullOrEmpty(configuration.GetValue<string>(EnvironmentVariables.WebAppsPrivateIPAddress)) &&
-                string.IsNullOrEmpty(configuration.GetValue<string>(EnvironmentVariables.WebAppsPrivatePorts)))
+            if (!IsRunningOnAzureAppService(configuration))
             {
                 int siloPort = Defaults.SiloPort;
                 int gatewayPort = Defaults.GatewayPort;
@@ -35,7 +34,7 @@ namespace Orleans.Hosting
                     options.SiloPort = siloPort;
                     options.GatewayPort = gatewayPort;
 
-                    if(!IsLocalIpAddress(Environment.MachineName))
+                    if (!IsLocalIpAddress(Environment.MachineName))
                     {
                         var siloHostEntry = Dns.GetHostEntry(Environment.MachineName);
                         options.AdvertisedIPAddress = siloHostEntry.AddressList[0];
@@ -48,6 +47,16 @@ namespace Orleans.Hosting
             }
 
             base.Build(siloBuilder, configuration);
+
+            /// <summary>
+            /// Reports back if the silo is running on Azure App Service, in a regional vnet-
+            /// configured environment with multiple private ports.
+            /// </summary>
+            static bool IsRunningOnAzureAppService(IConfiguration configuration)
+            {
+                return !string.IsNullOrEmpty(configuration.GetValue<string>(EnvironmentVariables.WebAppsPrivateIPAddress)) &&
+                       !string.IsNullOrEmpty(configuration.GetValue<string>(EnvironmentVariables.WebAppsPrivatePorts));
+            }
         }
 
         public static bool IsLocalIpAddress(string host)
