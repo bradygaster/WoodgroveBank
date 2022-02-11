@@ -8,9 +8,7 @@ namespace Orleans.Hosting
         {
             if (!string.IsNullOrEmpty(configuration.GetValue<string>(EnvironmentVariables.ApplicationInsightsInstrumentationKey)))
             {
-                var azureMonitoringInstrumentationKey = configuration.GetValue<string>(EnvironmentVariables.ApplicationInsightsInstrumentationKey);
-                siloBuilder
-                    .AddApplicationInsightsTelemetryConsumer(configuration.GetValue<string>(EnvironmentVariables.ApplicationInsightsInstrumentationKey));
+                siloBuilder.AddApplicationInsightsTelemetryConsumer(configuration.GetValue<string>(EnvironmentVariables.ApplicationInsightsInstrumentationKey));
             }
 
             base.Build(siloBuilder, configuration);

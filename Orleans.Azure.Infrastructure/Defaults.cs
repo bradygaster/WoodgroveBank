@@ -27,5 +27,9 @@ namespace Orleans.Hosting
         public static string AzureStorageConnectionString { get; } = "ORLEANS_AZURE_STORAGE_CONNECTION_STRING";
         public static string WebAppsPrivateIPAddress { get; } = "WEBSITE_PRIVATE_IP";
         public static string WebAppsPrivatePorts { get; } = "WEBSITE_PRIVATE_PORTS";
+        public static string KubernetesPodName { get; } = "POD_NAME";
+        public static string KubernetesPodNamespace { get; } = "POD_NAMESPACE";
+        public static string KubernetesPodIPAddress { get; } = "POD_IP";
+
     }
 }

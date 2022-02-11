@@ -8,15 +8,16 @@ namespace Orleans.Hosting
         public static ISiloBuilder HostSiloInAzure(this ISiloBuilder siloBuilder, IConfiguration configuration)
         {
             // registry meta
-            var clusterOptionsBuilder = new ClusterNameSiloBuilder();
-            var siloOptionsBuilder = new SiloNameSiloBuilder();
+            var clusterNameSiloBuilder = new ClusterNameSiloBuilder();
+            var siloNameSiloBuilder = new SiloNameSiloBuilder();
 
             // storage
             var tableStorageBuilder = new AzureTableStorageClusteringSiloBuilder();
 
             // endpoints
-            var webAppSiloBuilder = new AzureAppServiceSiloBuilder();
-            var configuredEndpointsBuilder = new SiloEndpointsSiloBuilder();
+            var azureAppServiceSiloBuilder = new AzureAppServiceSiloBuilder();
+            var kubernetesSiloBuilder = new KubernetesSiloBuilder();
+            var siloEndpointsBuilder = new SiloEndpointsSiloBuilder();
 
             // monitoring
             var appInsightsBuilder = new AzureApplicationInsightsSiloBuilder();
@@ -27,25 +28,28 @@ namespace Orleans.Hosting
             // set up the chain of responsibility
 
             // name the cluster & service
-            clusterOptionsBuilder.SetNextBuilder(siloOptionsBuilder);
+            clusterNameSiloBuilder.SetNextBuilder(siloNameSiloBuilder);
 
             // name the silo
-            siloOptionsBuilder.SetNextBuilder(tableStorageBuilder);
+            siloNameSiloBuilder.SetNextBuilder(tableStorageBuilder);
 
             // wire up storage clustering if so configured
-            tableStorageBuilder.SetNextBuilder(webAppSiloBuilder);
+            tableStorageBuilder.SetNextBuilder(azureAppServiceSiloBuilder);
 
-            // set up the endpoints according the Azure App Service, if detected
-            webAppSiloBuilder.SetNextBuilder(configuredEndpointsBuilder);
+            // set up the endpoints according to Azure App Service, if detected
+            azureAppServiceSiloBuilder.SetNextBuilder(kubernetesSiloBuilder);
+
+            // set up the endpoints according to Kubernetes, if detected
+            kubernetesSiloBuilder.SetNextBuilder(siloEndpointsBuilder);
 
             // set up the silo's endpoints (if not Kubernetes or Azure App Service)
-            configuredEndpointsBuilder.SetNextBuilder(appInsightsBuilder);
+            siloEndpointsBuilder.SetNextBuilder(appInsightsBuilder);
 
             // extras
             appInsightsBuilder.SetNextBuilder(localhostBuilder);
 
             // build the silo
-            clusterOptionsBuilder.Build(siloBuilder, configuration);
+            clusterNameSiloBuilder.Build(siloBuilder, configuration);
 
             return siloBuilder;
         }

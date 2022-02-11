@@ -17,7 +17,7 @@ namespace Orleans.Hosting
                 configures the silo's endpoints.
             */
 
-            if (!IsRunningOnAzureAppService(configuration))
+            if (!IsRunningOnAzureAppService(configuration) && !IsRunningOnKubernetes(configuration))
             {
                 int siloPort = Defaults.SiloPort;
                 int gatewayPort = Defaults.GatewayPort;
@@ -56,6 +56,16 @@ namespace Orleans.Hosting
             {
                 return !string.IsNullOrEmpty(configuration.GetValue<string>(EnvironmentVariables.WebAppsPrivateIPAddress)) &&
                        !string.IsNullOrEmpty(configuration.GetValue<string>(EnvironmentVariables.WebAppsPrivatePorts));
+            }
+
+            ///<summary>
+            /// Reports back if the silo is running on Kubernetes.
+            /// </summary>
+            static bool IsRunningOnKubernetes(IConfiguration configuration)
+            {
+                return !string.IsNullOrEmpty(configuration.GetValue<string>(EnvironmentVariables.KubernetesPodName)) &&
+                       !string.IsNullOrEmpty(configuration.GetValue<string>(EnvironmentVariables.KubernetesPodNamespace)) &&
+                       !string.IsNullOrEmpty(configuration.GetValue<string>(EnvironmentVariables.KubernetesPodIPAddress));
             }
         }
 
