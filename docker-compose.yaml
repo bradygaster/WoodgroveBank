@@ -3,7 +3,7 @@ version: '3.4'
 services:
 
   admin:
-    image: admin:latest
+    image: woodgrovebank-admin:latest
     build:
       context: .
       dockerfile: Admin/Dockerfile
@@ -12,11 +12,12 @@ services:
     hostname: admin
     ports:
       - 5001:80
+      - 8080:8080
       - 11111:11111
       - 30000:30000
 
   api:
-    image: api:latest
+    image: woodgrovebank-api:latest
     build:
       context: .
       dockerfile: API/Dockerfile
