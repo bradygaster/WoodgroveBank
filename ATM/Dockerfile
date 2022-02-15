@@ -8,16 +8,16 @@ EXPOSE 30000
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["API/API.csproj", "API/"]
-RUN dotnet restore "API/API.csproj"
+COPY ["ATM/ATM.csproj", "ATM/"]
+RUN dotnet restore "ATM/ATM.csproj"
 COPY . .
-WORKDIR "/src/API"
-RUN dotnet build "API.csproj" -c Release -o /app/build
+WORKDIR "/src/ATM"
+RUN dotnet build "ATM.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "API.csproj" -c Release -o /app/publish
+RUN dotnet publish "ATM.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "API.dll"]
+ENTRYPOINT ["dotnet", "ATM.dll"]

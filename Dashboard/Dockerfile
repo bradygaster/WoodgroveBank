@@ -3,21 +3,21 @@
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 EXPOSE 80
-EXPOSE 11111
-EXPOSE 30000
+EXPOSE 11112
+EXPOSE 30001
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["API/API.csproj", "API/"]
-RUN dotnet restore "API/API.csproj"
+COPY ["Dashboard/Dashboard.csproj", "Dashboard/"]
+RUN dotnet restore "Dashboard/Dashboard.csproj"
 COPY . .
-WORKDIR "/src/API"
-RUN dotnet build "API.csproj" -c Release -o /app/build
+WORKDIR "/src/Dashboard"
+RUN dotnet build "Dashboard.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "API.csproj" -c Release -o /app/publish
+RUN dotnet publish "Dashboard.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "API.dll"]
+ENTRYPOINT ["dotnet", "Dashboard.dll"]

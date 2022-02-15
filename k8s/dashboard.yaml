@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: woodgrovebank-dashboard
+spec:
+  selector:
+    app: woodgrovebank-dashboard
+  ports:
+  - port: 80
+    targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: woodgrovebank-dashboard
+spec:
+  selector:
+    matchLabels:
+      app: woodgrovebank-dashboard
+  template:
+    metadata:
+      labels:
+        app: woodgrovebank-dashboard
+    spec:
+      containers:
+      - name: woodgrovebank-dashboard
+        image: woodgrovebank-dashboard:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        - containerPort: 30000
+        - containerPort: 11111
+        env:
+          - name: ORLEANS_SERVICE_ID
+            value: 'Service'
+          - name: ORLEANS_CLUSTER_ID
+            value: 'Cluster'
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: ASPNETCORE_ENVIRONMENT
+            value: 'Development'
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dashboard-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - pathType: Prefix
+        path: /dashboard
+        backend:
+          service:
+            name: woodgrovebank-dashboard
+            port:
+              number: 80

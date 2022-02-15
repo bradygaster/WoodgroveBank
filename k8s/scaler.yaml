@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: orleans-scaler
+spec:
+  selector:
+    app: orleans-scaler
+  ports:
+  - port: 80
+    targetPort: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orleans-scaler
+spec:
+  selector:
+    matchLabels:
+      app: orleans-scaler
+  template:
+    metadata:
+      labels:
+        app: orleans-scaler
+    spec:
+      containers:
+      - name: orleans-scaler
+        image: orleans-scaler:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        - containerPort: 30000
+        - containerPort: 11111
+        env:
+          - name: ORLEANS_SERVICE_ID
+            value: 'Service'
+          - name: ORLEANS_CLUSTER_ID
+            value: 'Cluster'
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: ASPNETCORE_ENVIRONMENT
+            value: 'Development'
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: orleans-scaler-scaledobject
+spec:
+  scaleTargetRef:
+    name: woodgrovebank-admin
+  triggers:
+    - type: external
+      metadata:
+        scalerAddress: orleans-scaler
+        graintype: icustomergrain
+        upperbound: '5'
+        

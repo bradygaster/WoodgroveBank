@@ -25,7 +25,10 @@ namespace WoodgroveBank.Infrastructure
                 {
                     siloBuilder
                         .ConfigureApplicationParts(parts => parts.AddFromApplicationBaseDirectory())
-                        .UseDashboard(options => { });
+                        .UseDashboard(options => {
+                            options.HostSelf = true;
+                            options.BasePath = "/dashboard";
+                        });
                 }
                 
             });

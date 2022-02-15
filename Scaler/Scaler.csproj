@@ -14,8 +14,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Grpc.AspNetCore" Version="2.40.0" />
-		<ProjectReference Include="..\Abstractions\Abstractions.csproj" />
-		<ProjectReference Include="..\Grains\Grains.csproj" />
 		<ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
 		<ProjectReference Include="..\Orleans.Azure.Infrastructure\Orleans.Azure.Infrastructure.csproj" />
 	</ItemGroup>
