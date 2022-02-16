@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package KEDA;
+package externalscaler;
 option go_package = ".;externalscaler";
 
 service ExternalScaler {

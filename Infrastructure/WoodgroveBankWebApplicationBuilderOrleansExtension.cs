@@ -6,7 +6,7 @@ namespace WoodgroveBank.Infrastructure
 {
     public static class WoodgroveBankWebApplicationBuilderOrleansExtension
     {
-        public static WebApplicationBuilder AddWoodvilleBankSilo(this WebApplicationBuilder webApplicationBuilder, bool useDashboard = false)
+        public static WebApplicationBuilder AddWoodvilleBankSilo(this WebApplicationBuilder webApplicationBuilder)
         {
             var storageConnectionString = webApplicationBuilder.Configuration.GetValue<string>(EnvironmentVariables.AzureStorageConnectionString);
             webApplicationBuilder.AddOrleansSilo(siloBuilder =>
@@ -20,16 +20,6 @@ namespace WoodgroveBank.Infrastructure
                     .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.CustomersStore, options => options.ConfigureTableServiceClient(storageConnectionString))
                     .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.TransactionsStore, options => options.ConfigureTableServiceClient(storageConnectionString))
                     ;
-
-                if(useDashboard)
-                {
-                    siloBuilder
-                        .ConfigureApplicationParts(parts => parts.AddFromApplicationBaseDirectory())
-                        .UseDashboard(options => {
-                            options.HostSelf = true;
-                            options.BasePath = "/dashboard";
-                        });
-                }
                 
             });
 

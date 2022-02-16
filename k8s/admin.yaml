@@ -13,14 +13,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: woodgrovebank-admin
+  labels:
+    orleans/serviceId: woodgrovebank
 spec:
   selector:
     matchLabels:
       app: woodgrovebank-admin
+      orleans/serviceId: woodgrovebank
   template:
     metadata:
       labels:
         app: woodgrovebank-admin
+        orleans/serviceId: woodgrovebank
+        orleans/clusterId: woodgrovebank
     spec:
       containers:
       - name: woodgrovebank-admin
@@ -32,9 +37,13 @@ spec:
         - containerPort: 11111
         env:
           - name: ORLEANS_SERVICE_ID
-            value: 'Service'
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.labels['orleans/serviceId']
           - name: ORLEANS_CLUSTER_ID
-            value: 'Cluster'
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.labels['orleans/clusterId']
           - name: POD_NAMESPACE
             valueFrom:
               fieldRef:
@@ -47,6 +56,11 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
+          - name: ORLEANS_AZURE_STORAGE_CONNECTION_STRING
+            valueFrom: 
+              secretKeyRef: 
+                key: clustering
+                name: storage-connection-strings
           - name: ASPNETCORE_ENVIRONMENT
             value: 'Development'
         resources:

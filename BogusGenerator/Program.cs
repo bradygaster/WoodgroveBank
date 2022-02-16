@@ -6,7 +6,7 @@ var createRandomCustomers = async () =>
 {
     var apiClient = new WoodgroveBankApi();
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 25; i++)
     {
         var customerId = Guid.NewGuid();
         var faker = new Faker<Customer>()

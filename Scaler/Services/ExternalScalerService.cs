@@ -1,12 +1,12 @@
 ﻿
 using Grpc.Core;
-using KEDA;
+using Externalscaler;
 using Orleans;
 using Orleans.Runtime;
 
 namespace Scaler.Services
 {
-    public class ExternalScalerService : KEDA.ExternalScaler.ExternalScalerBase
+    public class ExternalScalerService : Externalscaler.ExternalScaler.ExternalScalerBase
     {
         ILogger<ExternalScalerService> _logger;
         IManagementGrain _managementGrain;

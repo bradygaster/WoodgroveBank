@@ -8,7 +8,6 @@
                 !string.IsNullOrEmpty(configuration.GetValue<string>(EnvironmentVariables.KubernetesPodNamespace)) &&
                 !string.IsNullOrEmpty(configuration.GetValue<string>(EnvironmentVariables.KubernetesPodIPAddress)))
             {
-                // todo: add wire-up specific to the kubernetes hosting package's expectations
                 siloBuilder.UseKubernetesHosting();
             }
 
