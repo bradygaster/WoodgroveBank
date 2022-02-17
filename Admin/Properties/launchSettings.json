@@ -9,6 +9,12 @@
       },
       "applicationUrl": "http://localhost:5001",
       "dotnetRunMessages": true
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/customers",
+      "publishAllPorts": true
     }
   }
 }

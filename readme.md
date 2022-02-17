@@ -88,8 +88,20 @@ Set up the Kubernetes cluster with the prerequisite Kubernetes services:
   cd .\BogusGenerator\
   dotnet run
   ```
+  
+  This console app will generate some fake data. As you use the Swagger UI page and the Bogus generator to create fake data, you'll see more grains appear in the cluster and in the front end interface. Add one round of customers and accounts. 
+  
+### Auto-scaling the Orleans Cluster by Grain Count
 
-This console app will generate some fake data. As you use the Swagger UI page and the Bogus generator to create fake data, you'll see more grains appear in the cluster and in the front end interface.
+Now you'll add the Orleans Scaler (experimental) to the Kubernetes cluster see how you can scale your silos according to the number of a specific type of grain you expect to see in the Orleans cluster, per silo.
+
+- Deploy the scaler
+
+  ```
+  kubectl apply -f .\k8s\scaler.yaml
+  ```
+
+- Watch the logs for the scaler.
 
 ---
 

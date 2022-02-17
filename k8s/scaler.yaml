@@ -72,15 +72,17 @@ apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: orleans-scaler-scaledobject
-  namespace: woodgrove01
+  namespace: woodgrovebank01
 spec:
   pollingInterval: 10
   scaleTargetRef:
     name: woodgrovebank-admin
+  minReplicaCount: 1
+  maxReplicaCount: 10
   triggers:
     - type: external
       metadata:
-        scalerAddress: orleans-scaler.woodgrove01.svc.cluster.local:80
+        scalerAddress: orleans-scaler.woodgrovebank01.svc.cluster.local:80
         graintype: 'customergrain'
         upperbound: '60'
         

@@ -44,10 +44,10 @@ var createRandomCustomers = async () =>
         };
 
         Console.WriteLine($"Creating account {checking.Name} for customer {fakeCustomer.Name} with a balance of {checking.Balance}.");
-        await apiClient.CreateAccount(checking);
+        apiClient.CreateAccount(checking);
 
         Console.WriteLine($"Creating account {savings.Name} for customer {fakeCustomer.Name} with a balance of {savings.Balance}.");
-        await apiClient.CreateAccount(savings);
+        apiClient.CreateAccount(savings);
     }
 };
 

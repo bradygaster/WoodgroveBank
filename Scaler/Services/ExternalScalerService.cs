@@ -22,28 +22,24 @@ namespace Scaler.Services
 
         public override async Task<GetMetricsResponse> GetMetrics(GetMetricsRequest request, ServerCallContext context)
         {
-            _logger.LogInformation($"Entering GetMetrics");
-
             CheckRequestMetadata(request.ScaledObjectRef);
 
             var response = new GetMetricsResponse();
             var grainType = request.ScaledObjectRef.ScalerMetadata["graintype"];
 
-            var fnd = await GetGrainCountInCluster(grainType);
+            var fnd = await GetGrainCountInCluster(grainType, request.ScaledObjectRef.Name);
 
             response.MetricValues.Add(new MetricValue
             {
                 MetricName = _metricName,
-                MetricValue_ = fnd
+                MetricValue_ = (fnd.GrainCount / fnd.SiloCount)
             });
 
-            _logger.LogInformation($"Exiting GetMetrics");
             return response;
         }
 
         public override Task<GetMetricSpecResponse> GetMetricSpec(ScaledObjectRef request, ServerCallContext context)
         {
-            _logger.LogInformation($"Entering GetMetricSpec");
             CheckRequestMetadata(request);
 
             var resp = new GetMetricSpecResponse();
@@ -54,21 +50,16 @@ namespace Scaler.Services
                 TargetSize = 10
             });
 
-            _logger.LogInformation($"Exiting GetMetricSpec");
             return Task.FromResult(resp);
         }
 
         public override async Task StreamIsActive(ScaledObjectRef request, IServerStreamWriter<IsActiveResponse> responseStream, ServerCallContext context)
         {
-            _logger.LogInformation($"Entering StreamIsActive");
             CheckRequestMetadata(request);
-            var grainType = request.ScalerMetadata["graintype"];
-            var upperbound = request.ScalerMetadata["upperbound"];
 
             while (!context.CancellationToken.IsCancellationRequested)
             {
-                var grainCount = await GetGrainCountInCluster(grainType);
-                if (grainCount > long.Parse(upperbound))
+                if (await AreTooManyGrainsInTheCluster(request))
                 {
                     _logger.LogInformation($"Writing IsActiveResopnse to stream with Result = true.");
                     await responseStream.WriteAsync(new IsActiveResponse
@@ -77,20 +68,19 @@ namespace Scaler.Services
                     });
                 }
 
-                _logger.LogInformation($"Waiting inside StreamIsActive");
                 await Task.Delay(TimeSpan.FromSeconds(5));
             }
         }
 
         public override async Task<IsActiveResponse> IsActive(ScaledObjectRef request, ServerCallContext context)
         {
-            _logger.LogInformation($"Entering IsActive");
             CheckRequestMetadata(request);
 
-            _logger.LogInformation($"Exiting IsActive");
+            var result = await AreTooManyGrainsInTheCluster(request);
+            _logger.LogInformation($"Returning {result} from IsActive.");
             return new IsActiveResponse
             {
-                Result = await AreTooManyGrainsInTheCluster(request)
+                Result = result
             };
         }
 
@@ -104,27 +94,26 @@ namespace Scaler.Services
 
         private async Task<bool> AreTooManyGrainsInTheCluster(ScaledObjectRef request)
         {
-            _logger.LogInformation($"Entering AreTooManyGrainsInTheCluster");
             var grainType = request.ScalerMetadata["graintype"];
             var upperbound = request.ScalerMetadata["upperbound"];
-            _logger.LogInformation($"Entering GetMetricSpec");
-            var tooMany = Convert.ToInt32(upperbound) <= await GetGrainCountInCluster(grainType);
-            _logger.LogInformation($"Exiting AreTooManyGrainsInTheCluster");
+            var counts = await GetGrainCountInCluster(grainType, request.Name);
+            if (counts.GrainCount == 0) return false;
+            var tooMany = Convert.ToInt32(upperbound) <= (counts.GrainCount / counts.SiloCount);
+            _logger.LogInformation($"Returning {tooMany} from AreTooManyGrainsInTheCluster as there are {counts.GrainCount} grains and {counts.SiloCount} silos.");
             return tooMany;
         }
 
-        private async Task<long> GetGrainCountInCluster(string grainType)
+        private async Task<GrainSaturationSummary> GetGrainCountInCluster(string grainType, string? siloNameFilter = null)
         {
-            _logger.LogInformation($"Entering GetGrainCountInCluster");
-            _logger.LogInformation($"Checking cluster for count of instances of {grainType}.");
             var statistics = await _managementGrain.GetDetailedGrainStatistics();
             var activeGrainsInCluster = statistics.Select(_ => new GrainInfo(_.GrainType, _.GrainIdentity.IdentityString, _.SiloAddress.ToGatewayUri().AbsoluteUri));
-            var activeGrainsOfSpecifiedType = activeGrainsInCluster.Where(_ => _.Type.ToLower().Contains(grainType)).Count();
-            _logger.LogInformation($"Found {activeGrainsOfSpecifiedType} instances of {grainType} in cluster.");
-            _logger.LogInformation($"Exiting GetGrainCountInCluster");
-            return activeGrainsOfSpecifiedType;
+            var activeGrainsOfSpecifiedType = activeGrainsInCluster.Where(_ => _.Type.ToLower().Contains(grainType));
+            var activeSiloCount = activeGrainsOfSpecifiedType.Select(_ => _.SiloName).Distinct().Count();
+            _logger.LogInformation($"Found {activeGrainsOfSpecifiedType.Count()} instances of {grainType} in cluster, with {activeSiloCount} silos in the cluster hosting {grainType} grains.");
+            return new GrainSaturationSummary(activeGrainsOfSpecifiedType.Count(), activeSiloCount);
         }
     }
 
     public record GrainInfo(string Type, string PrimaryKey, string SiloName);
+    public record GrainSaturationSummary(long GrainCount, long SiloCount);
 }
