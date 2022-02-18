@@ -103,13 +103,14 @@ namespace Scaler.Services
             return tooMany;
         }
 
-        private async Task<GrainSaturationSummary> GetGrainCountInCluster(string grainType, string? siloNameFilter = null)
+        private async Task<GrainSaturationSummary> GetGrainCountInCluster(string grainType, string siloNameFilter)
         {
             var statistics = await _managementGrain.GetDetailedGrainStatistics();
+            var silos = await _managementGrain.GetDetailedHosts();
             var activeGrainsInCluster = statistics.Select(_ => new GrainInfo(_.GrainType, _.GrainIdentity.IdentityString, _.SiloAddress.ToGatewayUri().AbsoluteUri));
             var activeGrainsOfSpecifiedType = activeGrainsInCluster.Where(_ => _.Type.ToLower().Contains(grainType));
-            var activeSiloCount = activeGrainsOfSpecifiedType.Select(_ => _.SiloName).Distinct().Count();
-            _logger.LogInformation($"Found {activeGrainsOfSpecifiedType.Count()} instances of {grainType} in cluster, with {activeSiloCount} silos in the cluster hosting {grainType} grains.");
+            var activeSiloCount = activeGrainsOfSpecifiedType.Select(_ => _.SiloName).Distinct().Where(_ => _.ToLower().Contains(siloNameFilter.ToLower())).Count();
+            _logger.LogInformation($"Found {activeGrainsOfSpecifiedType.Count()} instances of {grainType} in cluster, with {activeSiloCount} '{siloNameFilter}' silos in the cluster hosting {grainType} grains.");
             return new GrainSaturationSummary(activeGrainsOfSpecifiedType.Count(), activeSiloCount);
         }
     }

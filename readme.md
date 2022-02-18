@@ -10,31 +10,28 @@ There are a variety of ways the Woodgrove Bank apps can be set up on Kubernetes 
 
 Presuming a local Kubernetes setup. In the case of this document, Docker Desktop was used, along with the Kubernetes that ships with it. A "Reset Kubernetes Cluster" was performed to reset the cluster.
 
-Set up the Kubernetes cluster with the prerequisite Kubernetes services:
+1. Working Namespace
 
-- Keda
+    Create a new namespace in your Kubernetes cluster for your deployment by executing this command. This way if you make a mistake you can easily reset by deleting the namespace and starting over.
 
-  ```bash
-  helm repo add kedacore https://kedacore.github.io/charts
-  helm repo update
-  kubectl create namespace keda
-  helm install keda kedacore/keda --namespace keda
-  ```
-- Ingress
+    ```
+    kubectl create namespace woodgrovebank01
+    kubectl config set-context --current --namespace=woodgrovebank01 
+    ```
 
-  ```bash
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.1.1/deploy/static/provider/baremetal/deploy.yaml
-  ```
-- Working Namespace
+2. If you haven't yet already installed ingress-nginx, do so next:
 
-  Create a new namespace in your Kubernetes cluster for your deployment by executing the command:
+    ```bash
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.1.1/deploy/static/provider/baremetal/deploy.yaml
+    ```
 
-  ```
-  kubectl create namespace woodgrovebank01
-  kubectl config set-context --current --namespace=woodgrovebank01 
-  ```
+3. Install KEDA to enable silo auto-scaling with the experimental Orleans Scaler:
 
-  This way if you make a mistake you can easily reset by deleting the namespace and starting over.
+    ```bash
+    helm repo add kedacore https://kedacore.github.io/charts
+    helm repo update
+    helm install keda kedacore/keda --namespace woodgrovebank01
+    ```
 
 - Create a new Azure Storage account
 
@@ -55,19 +52,19 @@ Set up the Kubernetes cluster with the prerequisite Kubernetes services:
 - Deploy the bank employee app
 
   ```
-  kubectl apply -f .\k8s\admin.yaml
+  kubectl apply -f ./k8s/admin.yaml
   ```
 
 - Deploy the API
 
   ```
-  kubectl apply -f .\k8s\api.yaml
+  kubectl apply -f ./k8s/api.yaml
   ```
 
 - Deploy the dashboard
 
   ```
-  kubectl apply -f .\k8s\dashboard.yaml
+  kubectl apply -f ./k8s/dashboard.yaml
   ```
 
 - Set up the port-forwarding so you can browse all 3 sites. Execute each of the following commands in a separate terminal window.
@@ -85,7 +82,7 @@ Set up the Kubernetes cluster with the prerequisite Kubernetes services:
 - Run the data-generating app to generate fake data. 
 
   ```
-  cd .\BogusGenerator\
+  cd BogusGenerator
   dotnet run
   ```
   
@@ -98,10 +95,16 @@ Now you'll add the Orleans Scaler (experimental) to the Kubernetes cluster see h
 - Deploy the scaler
 
   ```
-  kubectl apply -f .\k8s\scaler.yaml
+  kubectl apply -f ./k8s/scaler.yaml
   ```
 
-- Watch the logs for the scaler.
+- Watch the logs for the scaler. Here, I pass them to `jq` so they come out nicely-formatted on-screen.
+
+  ```
+  kubectl logs -f <orleans-scaler-pod-name> | jq
+  ```
+
+  Now you should see JSON-formatted logs on-screen. You may need to [install jq](https://stedolan.github.io/jq/), first, but if you don't want to, just omit the `| jq` part and you should be good.
 
 ---
 

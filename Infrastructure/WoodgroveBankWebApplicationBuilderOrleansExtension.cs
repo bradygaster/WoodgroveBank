@@ -6,7 +6,7 @@ namespace WoodgroveBank.Infrastructure
 {
     public static class WoodgroveBankWebApplicationBuilderOrleansExtension
     {
-        public static WebApplicationBuilder AddWoodvilleBankSilo(this WebApplicationBuilder webApplicationBuilder)
+        public static WebApplicationBuilder AddWoodgroveBankSilo(this WebApplicationBuilder webApplicationBuilder)
         {
             var storageConnectionString = webApplicationBuilder.Configuration.GetValue<string>(EnvironmentVariables.AzureStorageConnectionString);
             webApplicationBuilder.AddOrleansSilo(siloBuilder =>

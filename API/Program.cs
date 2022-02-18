@@ -1,13 +1,17 @@
+using Microsoft.AspNetCore.Mvc;
 using Orleans;
+using Orleans.Runtime;
 using WoodgroveBank.Abstractions;
 using WoodgroveBank.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.AddWoodvilleBankSilo();
+builder.AddWoodgroveBankSilo();
 
 var app = builder.Build();
+app.UseStaticFiles();
+app.UseRouting();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -139,5 +143,43 @@ app.MapGet("/atm/signin/{customerPin}", async (IGrainFactory grainFactory, strin
 .Produces<Customer>(StatusCodes.Status200OK)
 .Produces(StatusCodes.Status401Unauthorized);
 
+/// <summary>
+/// Get high-level details about the Orleans cluster.
+/// </summary>
+app.MapGet("/system/grains", async ([FromServices] IGrainFactory grainFactory) =>
+{
+    var managementGrain = grainFactory.GetGrain<IManagementGrain>(0);
+    var statistics = await managementGrain.GetDetailedGrainStatistics();
+    var detailedHosts = await managementGrain.GetDetailedHosts();
+    var silos = detailedHosts.Select(_ => new SiloInfo(_.SiloName, _.SiloAddress.ToGatewayUri().AbsoluteUri)).Distinct();
+    var result = statistics.Select(_ => new GrainInfo(_.GrainType, _.GrainIdentity.IdentityString, silos.First(silo => silo.SiloAddress == _.SiloAddress.ToGatewayUri().AbsoluteUri).SiloName));
+    return Results.Ok(result);
+})
+.WithTags("System")
+.WithName("GrainDetails")
+.Produces<GrainInfo[]>(StatusCodes.Status200OK);
+
+/// <summary>
+/// Get high-level details about the Orleans silos.
+/// </summary>
+app.MapGet("/system/silos", async ([FromServices] IGrainFactory grainFactory) =>
+{
+    var managementGrain = grainFactory.GetGrain<IManagementGrain>(0);
+    var statistics = await managementGrain.GetDetailedGrainStatistics();
+    var detailedHosts = await managementGrain.GetDetailedHosts();
+    var silos = detailedHosts.Select(_ => new SiloInfo(_.SiloName, _.SiloAddress.ToGatewayUri().AbsoluteUri));
+    var siloNames = silos.Select(_ => _.SiloName).Distinct();
+    return Results.Ok(siloNames);
+})
+.WithTags("System")
+.WithName("SiloDetails")
+.Produces<string[]>(StatusCodes.Status200OK);
+
 // run the api
 app.Run();
+
+// This record is used to display information about Grains hosted in the Orleans cluster.
+public record GrainInfo(string Type, string PrimaryKey, string SiloAddress);
+
+// This record is used to display information about silos in the Orleans cluster.
+public record SiloInfo(string SiloName, string SiloAddress);
