@@ -13,8 +13,8 @@ var createRandomCustomers = async () =>
             .RuleFor(p => p.Id, f => customerId)
             .RuleFor(p => p.Name, f => f.Name.FullName())
             .RuleFor(p => p.Country, f => f.Address.Country())
-            .RuleFor(p => p.Pin, new Random().Next(1000, 9999).ToString())
-            .RuleFor(p => p.City, f => $"{f.Address.City()}, {f.Address.State()}");
+            .RuleFor(p => p.City, f => $"{f.Address.City()}, {f.Address.State()}")
+            .RuleFor(p => p.Pin, new Random().Next(1000, 9999).ToString());
 
         var fakeCustomer = faker.Generate();
 

@@ -26,13 +26,14 @@ namespace Scaler.Services
 
             var response = new GetMetricsResponse();
             var grainType = request.ScaledObjectRef.ScalerMetadata["graintype"];
+            var siloNameFilter = request.ScaledObjectRef.ScalerMetadata["siloNameFilter"];
 
-            var fnd = await GetGrainCountInCluster(grainType, request.ScaledObjectRef.Name);
+            var fnd = await GetGrainCountInCluster(grainType, siloNameFilter);
 
             response.MetricValues.Add(new MetricValue
             {
                 MetricName = _metricName,
-                MetricValue_ = (fnd.GrainCount / fnd.SiloCount)
+                MetricValue_ = (fnd.GrainCount > 0 && fnd.SiloCount > 0) ? (fnd.GrainCount / fnd.SiloCount) : 0
             });
 
             return response;
@@ -86,9 +87,11 @@ namespace Scaler.Services
 
         private static void CheckRequestMetadata(ScaledObjectRef request)
         {
-            if (!request.ScalerMetadata.ContainsKey("graintype") || !request.ScalerMetadata.ContainsKey("upperbound"))
+            if (!request.ScalerMetadata.ContainsKey("graintype")
+                || !request.ScalerMetadata.ContainsKey("upperbound")
+                 || !request.ScalerMetadata.ContainsKey("siloNameFilter"))
             {
-                throw new ArgumentException("graintype and upperbound must be specified");
+                throw new ArgumentException("graintype, siloNameFilter, and upperbound must be specified");
             }
         }
 
@@ -96,8 +99,9 @@ namespace Scaler.Services
         {
             var grainType = request.ScalerMetadata["graintype"];
             var upperbound = request.ScalerMetadata["upperbound"];
-            var counts = await GetGrainCountInCluster(grainType, request.Name);
-            if (counts.GrainCount == 0) return false;
+            var siloNameFilter = request.ScalerMetadata["siloNameFilter"];
+            var counts = await GetGrainCountInCluster(grainType, siloNameFilter);
+            if (counts.GrainCount == 0 || counts.SiloCount == 0) return false;
             var tooMany = Convert.ToInt32(upperbound) <= (counts.GrainCount / counts.SiloCount);
             _logger.LogInformation($"Returning {tooMany} from AreTooManyGrainsInTheCluster as there are {counts.GrainCount} grains and {counts.SiloCount} silos.");
             return tooMany;
@@ -106,10 +110,13 @@ namespace Scaler.Services
         private async Task<GrainSaturationSummary> GetGrainCountInCluster(string grainType, string siloNameFilter)
         {
             var statistics = await _managementGrain.GetDetailedGrainStatistics();
-            var silos = await _managementGrain.GetDetailedHosts();
             var activeGrainsInCluster = statistics.Select(_ => new GrainInfo(_.GrainType, _.GrainIdentity.IdentityString, _.SiloAddress.ToGatewayUri().AbsoluteUri));
             var activeGrainsOfSpecifiedType = activeGrainsInCluster.Where(_ => _.Type.ToLower().Contains(grainType));
-            var activeSiloCount = activeGrainsOfSpecifiedType.Select(_ => _.SiloName).Distinct().Where(_ => _.ToLower().Contains(siloNameFilter.ToLower())).Count();
+            var detailedHosts = await _managementGrain.GetDetailedHosts();
+            var silos = detailedHosts
+                            .Where(x => x.Status == SiloStatus.Active)
+                            .Select(_ => new SiloInfo(_.SiloName, _.SiloAddress.ToGatewayUri().AbsoluteUri));
+            var activeSiloCount = silos.Where(_ => _.SiloName.ToLower().Contains(siloNameFilter.ToLower())).Count();
             _logger.LogInformation($"Found {activeGrainsOfSpecifiedType.Count()} instances of {grainType} in cluster, with {activeSiloCount} '{siloNameFilter}' silos in the cluster hosting {grainType} grains.");
             return new GrainSaturationSummary(activeGrainsOfSpecifiedType.Count(), activeSiloCount);
         }
@@ -117,4 +124,5 @@ namespace Scaler.Services
 
     public record GrainInfo(string Type, string PrimaryKey, string SiloName);
     public record GrainSaturationSummary(long GrainCount, long SiloCount);
+    public record SiloInfo(string SiloName, string SiloAddress);
 }

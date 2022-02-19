@@ -167,13 +167,16 @@ app.MapGet("/system/silos", async ([FromServices] IGrainFactory grainFactory) =>
     var managementGrain = grainFactory.GetGrain<IManagementGrain>(0);
     var statistics = await managementGrain.GetDetailedGrainStatistics();
     var detailedHosts = await managementGrain.GetDetailedHosts();
-    var silos = detailedHosts.Select(_ => new SiloInfo(_.SiloName, _.SiloAddress.ToGatewayUri().AbsoluteUri));
-    var siloNames = silos.Select(_ => _.SiloName).Distinct();
-    return Results.Ok(siloNames);
+    var silos = detailedHosts
+                    .Where(x => x.Status == SiloStatus.Active)
+                    .Select(_ => new SiloInfo(_.SiloName, _.SiloAddress.ToGatewayUri().AbsoluteUri));
+
+    silos = silos.Distinct();
+    return Results.Ok(silos);
 })
 .WithTags("System")
 .WithName("SiloDetails")
-.Produces<string[]>(StatusCodes.Status200OK);
+.Produces<SiloInfo[]>(StatusCodes.Status200OK);
 
 // run the api
 app.Run();

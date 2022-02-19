@@ -75,7 +75,7 @@ metadata:
 spec:
   pollingInterval: 30
   scaleTargetRef:
-    name: woodgrovebank-admin
+    name: woodgrovebank-api
   minReplicaCount: 1
   maxReplicaCount: 10
   triggers:
@@ -83,5 +83,6 @@ spec:
       metadata:
         scalerAddress: orleans-scaler:80
         graintype: 'customergrain'
+        siloNameFilter: 'woodgrovebank-api'
         upperbound: '60'
         
