@@ -1,6 +1,4 @@
-﻿using Orleans;
-
-namespace WoodgroveBank.Abstractions
+﻿namespace WoodgroveBank.Abstractions
 {
     public interface ICustomerGrain : IGrainWithGuidKey
     {

@@ -1,6 +1,5 @@
-﻿using Orleans;
+﻿using Microsoft.Extensions.Configuration;
 using Orleans.Configuration;
-using Orleans.Hosting;
 
 namespace WoodgroveBank.Infrastructure
 {
@@ -8,19 +7,39 @@ namespace WoodgroveBank.Infrastructure
     {
         public static WebApplicationBuilder AddWoodgroveBankSilo(this WebApplicationBuilder webApplicationBuilder)
         {
-            var storageConnectionString = webApplicationBuilder.Configuration.GetValue<string>(EnvironmentVariables.AzureStorageConnectionString);
-            webApplicationBuilder.AddOrleansSilo(siloBuilder =>
+            // read from configuration or use default setting values
+            var config = webApplicationBuilder.Configuration;
+            var storageConnectionString = config.GetValue<string>(EnvironmentVariables.AzureStorageConnectionString);
+            var clusterId = string.IsNullOrEmpty(config.GetValue<string>(EnvironmentVariables.OrleansClusterName))
+                ? Defaults.ClusterName
+                : config.GetValue<string>(EnvironmentVariables.OrleansClusterName);
+            var serviceId = string.IsNullOrEmpty(config.GetValue<string>(EnvironmentVariables.OrleansServiceName))
+                ? Defaults.ServiceName
+                : config.GetValue<string>(EnvironmentVariables.OrleansServiceName);
+            var siloName = string.IsNullOrEmpty(config.GetValue<string>(EnvironmentVariables.OrleansSiloName))
+                ? Defaults.SiloName
+                : config.GetValue<string>(EnvironmentVariables.OrleansSiloName);
+            
+            webApplicationBuilder.Host.UseOrleans(siloBuilder =>
             {
-                siloBuilder
-                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.AccountTransactionsStore, options => options.ConfigureTableServiceClient(storageConnectionString))
-                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.AccountsStore, options => options.ConfigureTableServiceClient(storageConnectionString))
-                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.AccountStore, options => options.ConfigureTableServiceClient(storageConnectionString))
-                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.CustomerStore, options => options.ConfigureTableServiceClient(storageConnectionString))
-                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.CustomerAccountsStore, options => options.ConfigureTableServiceClient(storageConnectionString))
-                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.CustomersStore, options => options.ConfigureTableServiceClient(storageConnectionString))
-                    .AddAzureTableGrainStorage(name: Strings.OrleansPersistenceNames.TransactionsStore, options => options.ConfigureTableServiceClient(storageConnectionString))
-                    ;
-                
+                // set up the cluster's id and service name
+                siloBuilder.Configure<ClusterOptions>(clusterOptions =>
+                {
+                    clusterOptions.ClusterId = clusterId;
+                    clusterOptions.ServiceId = serviceId;
+                });
+
+                // set up the silo name
+                siloBuilder.Configure<SiloOptions>(options => options.SiloName = siloName);
+
+                // use Kubernetes clustering
+                siloBuilder.UseKubernetesHosting();
+
+                // store persistent data in Azure Table Storage
+                siloBuilder.AddAzureTableGrainStorageAsDefault(options =>
+                {
+                    options.ConfigureTableServiceClient(storageConnectionString);
+                });
             });
 
             return webApplicationBuilder;
