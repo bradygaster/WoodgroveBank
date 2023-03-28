@@ -110,7 +110,7 @@ namespace Scaler.Services
         private async Task<GrainSaturationSummary> GetGrainCountInCluster(string grainType, string siloNameFilter)
         {
             var statistics = await _managementGrain.GetDetailedGrainStatistics();
-            var activeGrainsInCluster = statistics.Select(_ => new GrainInfo(_.GrainType, _.GrainIdentity.IdentityString, _.SiloAddress.ToGatewayUri().AbsoluteUri));
+            var activeGrainsInCluster = statistics.Select(_ => new GrainInfo(_.GrainType, _.GrainId.ToString(), _.SiloAddress.ToGatewayUri().AbsoluteUri));
             var activeGrainsOfSpecifiedType = activeGrainsInCluster.Where(_ => _.Type.ToLower().Contains(grainType));
             var detailedHosts = await _managementGrain.GetDetailedHosts();
             var silos = detailedHosts

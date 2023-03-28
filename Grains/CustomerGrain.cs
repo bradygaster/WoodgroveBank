@@ -41,7 +41,7 @@ namespace WoodgroveBank.Grains
 
             try
             {
-                account.CustomerId = this.GetGrainIdentity().PrimaryKey;
+                account.CustomerId = this.GetGrainId().GetGuidKey();
                 var accountGrain = this.GrainFactory.GetGrain<IAccountGrain>(account.Id);
                 account = await accountGrain.SaveAccount(account);
 

@@ -38,7 +38,7 @@ namespace WoodgroveBank.Grains
         {
             var transaction = new Transaction
             {
-                AccountId = this.GetGrainIdentity().PrimaryKey,
+                AccountId = this.GetGrainId().GetGuidKey(),
                 CustomerId = _accountState.State.CustomerId,
                 InitialAccountBalance = _accountState.State.Balance,
                 Timestamp = DateTime.Now,

@@ -152,7 +152,7 @@ app.MapGet("/system/grains", async ([FromServices] IGrainFactory grainFactory) =
     var statistics = await managementGrain.GetDetailedGrainStatistics();
     var detailedHosts = await managementGrain.GetDetailedHosts();
     var silos = detailedHosts.Select(_ => new SiloInfo(_.SiloName, _.SiloAddress.ToGatewayUri().AbsoluteUri)).Distinct();
-    var result = statistics.Select(_ => new GrainInfo(_.GrainType, _.GrainIdentity.IdentityString, silos.First(silo => silo.SiloAddress == _.SiloAddress.ToGatewayUri().AbsoluteUri).SiloName));
+    var result = statistics.Select(_ => new GrainInfo(_.GrainType, _.GrainId.ToString(), silos.First(silo => silo.SiloAddress == _.SiloAddress.ToGatewayUri().AbsoluteUri).SiloName));
     return Results.Ok(result);
 })
 .WithTags("System")
