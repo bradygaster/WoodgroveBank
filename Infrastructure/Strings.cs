@@ -21,6 +21,7 @@
         public static string SiloName { get; } = "Silo";
         public static int SiloPort { get; } = 11111;
         public static int GatewayPort { get; } = 30000;
+        public static string AzuriteConnectionString { get; } = "UseDevelopmentStorage=true;";
     }
 
     public static class EnvironmentVariables

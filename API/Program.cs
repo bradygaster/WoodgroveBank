@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Orleans;
 using Orleans.Runtime;
 using WoodgroveBank.Abstractions;
-using WoodgroveBank.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();

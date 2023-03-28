@@ -9,7 +9,9 @@ namespace Microsoft.AspNetCore.Builder
         {
             // read from configuration or use default setting values
             var config = webApplicationBuilder.Configuration;
-            var storageConnectionString = config.GetValue<string>(EnvironmentVariables.AzureStorageConnectionString);
+            var storageConnectionString = string.IsNullOrEmpty(config.GetValue<string>(EnvironmentVariables.AzureStorageConnectionString))
+                ? Defaults.AzuriteConnectionString
+                : config.GetValue<string>(EnvironmentVariables.AzureStorageConnectionString);
             var clusterId = string.IsNullOrEmpty(config.GetValue<string>(EnvironmentVariables.OrleansClusterName))
                 ? Defaults.ClusterName
                 : config.GetValue<string>(EnvironmentVariables.OrleansClusterName);
@@ -32,8 +34,12 @@ namespace Microsoft.AspNetCore.Builder
                 // set up the silo name
                 siloBuilder.Configure<SiloOptions>(options => options.SiloName = siloName);
 
-                // use Kubernetes clustering
+                // use Kubernetes hosting
                 siloBuilder.UseKubernetesHosting();
+
+                // use table storage for clustering
+                siloBuilder.UseAzureStorageClustering(options =>
+                    options.ConfigureTableServiceClient(storageConnectionString));
 
                 // store persistent data in Azure Table Storage
                 siloBuilder.AddAzureTableGrainStorageAsDefault(options =>

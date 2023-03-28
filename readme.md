@@ -31,14 +31,23 @@ Presuming a local Kubernetes setup. In the case of this document, Docker Desktop
     helm repo add kedacore https://kedacore.github.io/charts
     helm repo update
     helm install keda kedacore/keda --namespace woodgrovebank01
+    kubectl apply -f ./k8s/nslookup.yaml
     ```
 
-- Create a new Azure Storage account
+- Create a new Azure Storage account (or just use Azurite)
 
-  Once you've created the storage account, get the connection string for the storage account. Then use it in this command, which sets the Storage Account's connection string as a secret in the Kubernetes cluster. 
+  You can either use Azurite to emulate the Azure Storage Service running right in your Kubernetes instance (not recommended for production usage, this is *only* for dev-time deployments). If you'd like to use Azurite, execute this command:
+
+  > Note: Do **NOT** execute both of the below commands. Only use one or the other. 
 
   ```
-  kubectl create secret generic storage-connection-strings --from-literal=clustering="<connection-string>"
+  kubectl create secret generic storage-connection-strings --from-literal=clustering="UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite"
+  ```
+
+  **Or**, if you've created your own Azure Storage Account in the cloud, execute this command: 
+
+  ```
+  kubectl create secret generic storage-connection-strings --from-literal=clustering="<connection-string-from-portal>"
   ```
 
 - Build the containers
@@ -49,16 +58,22 @@ Presuming a local Kubernetes setup. In the case of this document, Docker Desktop
   docker-compose build
   ```
 
-- Deploy the bank employee app
+- Install Azurite for development-time local Azure Storage emulation (if you aren't using live Azure Storage Accounts).
 
   ```
-  kubectl apply -f ./k8s/admin.yaml
+  kubectl apply -f ./k8s/azurite.yaml
   ```
 
 - Deploy the API
 
   ```
   kubectl apply -f ./k8s/api.yaml
+  ```
+
+- Deploy the bank employee app
+
+  ```
+  kubectl apply -f ./k8s/admin.yaml
   ```
 
 - Deploy the dashboard
@@ -74,9 +89,9 @@ Presuming a local Kubernetes setup. In the case of this document, Docker Desktop
   kubectl port-forward service/woodgrovebank-api 5000:80
   kubectl port-forward service/woodgrovebank-dashboard 8080:80
   ```
-- Open your browser to the [Woodgrove Bank Employee App](http://localhost:5001/customers).
-- Open another browser tab to the [Swagger UI page for the Woodgrove Bank API](http://localhost:5000/swagger)
-- Open a third browser tab to the [The Orleans Dashboard](http://localhost:8080). 
+- Open your browser to the [Woodgrove Bank Employee App](http://localhost/admin).
+- Open another browser tab to the [Swagger UI page for the Woodgrove Bank API](http://localhost/api/swagger)
+- Open a third browser tab to the [The Orleans Dashboard](http://localhost/dashboard). 
 
 - Run the data-generating app to generate fake data. 
 
