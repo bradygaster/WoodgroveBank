@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
-using Orleans.Configuration;
+﻿using Orleans.Configuration;
+using WoodgroveBank.Infrastructure;
 
-namespace WoodgroveBank.Infrastructure
+namespace Microsoft.AspNetCore.Builder
 {
     public static class WoodgroveBankWebApplicationBuilderOrleansExtension
     {
-        public static WebApplicationBuilder AddWoodgroveBankSilo(this WebApplicationBuilder webApplicationBuilder)
+        public static WebApplicationBuilder AddWoodgroveBankSilo(this WebApplicationBuilder webApplicationBuilder, Action<ISiloBuilder>? siloAction = null)
         {
             // read from configuration or use default setting values
             var config = webApplicationBuilder.Configuration;
@@ -40,6 +40,12 @@ namespace WoodgroveBank.Infrastructure
                 {
                     options.ConfigureTableServiceClient(storageConnectionString);
                 });
+
+                // do any extra work the silo has requested
+                if(siloAction != null)
+                {
+                    siloAction(siloBuilder);
+                }
             });
 
             return webApplicationBuilder;

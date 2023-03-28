@@ -1,5 +1,5 @@
 var builder = WebApplication.CreateBuilder(args);
-builder.AddOrleansSilo();
+builder.AddWoodgroveBankSilo();
 builder.Services.AddGrpc();
 
 var app = builder.Build();

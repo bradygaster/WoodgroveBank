@@ -1,8 +1,6 @@
-using Orleans;
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
-builder.AddOrleansSilo(siloBuilder => {
+builder.AddWoodgroveBankSilo(siloBuilder => {
     siloBuilder.UseDashboard();
 });
 builder.Services.AddServicesForSelfHostedDashboard();
