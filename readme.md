@@ -82,17 +82,10 @@ Presuming a local Kubernetes setup. In the case of this document, Docker Desktop
   ```
   kubectl apply -f ./k8s/dashboard.yaml
   ```
-
-- Set up the port-forwarding so you can browse all 3 sites. Execute each of the following commands in a separate terminal window.
-
-  ```
-  kubectl port-forward service/woodgrovebank-admin 5001:80
-  kubectl port-forward service/woodgrovebank-api 5000:80
-  kubectl port-forward service/woodgrovebank-dashboard 8080:80
-  ```
-- Open your browser to the [Woodgrove Bank Employee App](http://localhost:5001/customers).
-- Open another browser tab to the [Swagger UI page for the Woodgrove Bank API](http://localhost:5000/swagger).
-- Open a third browser tab to the [The Orleans Dashboard](http://localhost:8080). 
+  
+- Open your browser to the [Woodgrove Bank Employee App](http://localhost:31001/customers).
+- Open another browser tab to the [Swagger UI page for the Woodgrove Bank API](http://localhost:31000/swagger).
+- Open a third browser tab to the [The Orleans Dashboard](http://localhost:31002). 
 
 - Run the data-generating app to generate fake data. 
 

@@ -11,8 +11,8 @@ namespace WoodgroveBank.Grains
         private IPersistentState<List<Customer>> _customerIndex { get; set; }
 
         public BankGrain(
-            [PersistentState("customers", Strings.OrleansPersistenceNames.CustomersStore)] IPersistentState<List<Customer>> customerIndex,
-            [PersistentState("transactions", Strings.OrleansPersistenceNames.TransactionsStore)] IPersistentState<List<Transaction>> transactionListState)
+            [PersistentState("customers")] IPersistentState<List<Customer>> customerIndex,
+            [PersistentState("transactions")] IPersistentState<List<Transaction>> transactionListState)
         {
             _customerIndex = customerIndex;
             _transactionListState = transactionListState;

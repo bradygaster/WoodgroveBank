@@ -82,7 +82,7 @@ while (repeat.ToLower() == "y")
 
 public class WoodgroveBankApi : IWoodgroveBankApi
 {
-    const string URI = "http://localhost/api";
+    const string URI = "http://localhost:31000";
     HttpClient _httpClient;
 
     public WoodgroveBankApi()

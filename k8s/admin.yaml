@@ -88,3 +88,23 @@ spec:
                 name: woodgrovebank-admin
                 port: 
                   number: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: woodgrovebank-admin-nodeport
+spec:
+  ports:
+  - name: http
+    nodePort: 31001
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: woodgrovebank-admin
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer:
+    ingress:
+    - hostname: localhost

@@ -7,8 +7,8 @@ namespace WoodgroveBank.Grains
 {
     public class AccountGrain : Grain, IAccountGrain
     {
-        public AccountGrain([PersistentState("account", Strings.OrleansPersistenceNames.AccountStore)] IPersistentState<Account> accountState,
-            [PersistentState("accountTransactions", Strings.OrleansPersistenceNames.AccountTransactionsStore)] IPersistentState<List<Transaction>> transactionListState)
+        public AccountGrain([PersistentState("account")] IPersistentState<Account> accountState,
+            [PersistentState("accountTransactions")] IPersistentState<List<Transaction>> transactionListState)
         {
             _accountState = accountState;
             _transactionListState = transactionListState;
