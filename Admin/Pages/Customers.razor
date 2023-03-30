@@ -2,6 +2,7 @@
 @using Orleans
 @using WoodgroveBank.Abstractions
 @inject IGrainFactory _grainFactory;
+@implements IDisposable
 
 <PageTitle>Customers</PageTitle>
 
@@ -18,10 +19,7 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Actions</th>
-                <th>Customer Name</th>
-                <th>City</th>
-                <th>Country</th>
+                <th>Event</th>
             </tr>
         </thead>
         <tbody>
@@ -42,13 +40,17 @@ else
 }
 
 @code {
-    Customer[]? _customers;
+    List<Customer> _customers = new();
 
     protected override async Task OnInitializedAsync()
     {
         var grain = _grainFactory.GetGrain<IBankGrain>(Guid.Empty);
-        _customers = await grain.GetCustomers();
 
         await base.OnInitializedAsync();
+    }
+
+    public void Dispose()
+    {
+        var grain = _grainFactory.GetGrain<IBankGrain>(Guid.Empty);
     }
 }

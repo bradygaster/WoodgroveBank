@@ -8,3 +8,4 @@ builder.Services.AddServicesForSelfHostedDashboard();
 var app = builder.Build();
 app.UseOrleansDashboard();
 app.Run();
+

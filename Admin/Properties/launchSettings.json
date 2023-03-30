@@ -5,7 +5,10 @@
       "launchBrowser": true,
       "launchUrl": "customers",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ORLEANS_SILO_PORT": "11113",
+        "ORLEANS_GATEWAY_PORT": "30002",
+        "ORLEANS_SILO_NAME": "WoodGroveAdmin"
       },
       "applicationUrl": "http://localhost:5001",
       "dotnetRunMessages": true

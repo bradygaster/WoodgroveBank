@@ -19,77 +19,65 @@ Presuming a local Kubernetes setup. In the case of this document, Docker Desktop
     kubectl config set-context --current --namespace=woodgrovebank01 
     ```
 
-2. If you haven't yet already installed ingress-nginx, do so next:
+1. If you haven't yet already installed ingress-nginx, do so next:
 
     ```bash
     kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.1.1/deploy/static/provider/baremetal/deploy.yaml
     ```
 
-3. Install KEDA to enable silo auto-scaling with the experimental Orleans Scaler:
+1. Per the [Orleans Kubernetes](https://learn.microsoft.com/dotnet/orleans/deployment/kubernetes) docs, for RBAC-enabled clusters, the Kubernetes service account for the pods may also need to be granted the required access. `rolebinding.yaml` performs this routine on the Kubernetes cluster. 
+
+    ```bash
+    kubectl apply -f ./k8s/rolebinding.yaml
+    kubectl apply -f ./k8s/dnsutils.yaml
+    ```
+
+1. Install KEDA to enable silo auto-scaling with the experimental Orleans Scaler:
 
     ```bash
     helm repo add kedacore https://kedacore.github.io/charts
     helm repo update
     helm install keda kedacore/keda --namespace woodgrovebank01
-    kubectl apply -f ./k8s/dnsutils.yaml
-    kubectl apply -f ./k8s/rolebinding.yaml
     ```
 
-- Create a new Azure Storage account (or just use Azurite)
+1. Create a new Azure Storage account (or just use Azurite)
 
-  You can either use Azurite to emulate the Azure Storage Service running right in your Kubernetes instance (not recommended for production usage, this is *only* for dev-time deployments). If you'd like to use Azurite, execute this command:
+      You can either use Azurite to emulate the Azure Storage Service running right in your Kubernetes instance (not recommended for production usage, this is *only* for dev-time deployments). If you'd like to use Azurite, execute this command:
 
-  > Note: Do **NOT** execute both of the below commands. Only use one or the other. 
+      > Note: Do **NOT** execute both of the below commands. Only use one or the other. 
 
-  ```
-  kubectl create secret generic storage-connection-strings --from-literal=clustering="UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite"
-  ```
+      ```bash
+      kubectl apply -f ./k8s/azurite.yaml
+      kubectl create secret generic storage-connection-strings --from-literal=clustering="UseDevelopmentStorage=true;DevelopmentStorageProxyUri=http://azurite"
+      ```
+        
+      **Or**, if you've created your own Azure Storage Account in the cloud, execute this command: 
 
-  **Or**, if you've created your own Azure Storage Account in the cloud, execute this command: 
+        kubectl create secret generic storage-connection-strings --from-literal=clustering="<connection-string-from-portal>"
 
-  ```
-  kubectl create secret generic storage-connection-strings --from-literal=clustering="<connection-string-from-portal>"
-  ```
+1. Build the containers using `docker-compose`. 
 
-- Build the containers
+    ```bash
+    docker-compose build
+    ```
 
-  Use `docker-compose` to build the containers. 
+1. Now install all the services.
 
-  ```
-  docker-compose build
-  ```
+    ```bash
+    kubectl apply -f ./k8s/api.yaml
+    kubectl apply -f ./k8s/admin.yaml
+    kubectl apply -f ./k8s/dashboard.yaml
+    ```
 
-- Install Azurite for development-time local Azure Storage emulation (if you aren't using live Azure Storage Accounts).
+1. Browse to the various microservices you just deployed. 
 
-  ```
-  kubectl apply -f ./k8s/azurite.yaml
-  ```
-
-- Deploy the API
-
-  ```
-  kubectl apply -f ./k8s/api.yaml
-  ```
-
-- Deploy the bank employee app
-
-  ```
-  kubectl apply -f ./k8s/admin.yaml
-  ```
-
-- Deploy the dashboard
-
-  ```
-  kubectl apply -f ./k8s/dashboard.yaml
-  ```
-  
 - Open your browser to the [Woodgrove Bank Employee App](http://localhost:31001/customers).
 - Open another browser tab to the [Swagger UI page for the Woodgrove Bank API](http://localhost:31000/swagger).
 - Open a third browser tab to the [The Orleans Dashboard](http://localhost:31002). 
 
-- Run the data-generating app to generate fake data. 
+1. (Optional) Run the data-generating app to generate fake data. 
 
-  ```
+  ```bash
   cd BogusGenerator
   dotnet run
   ```

@@ -21,9 +21,16 @@ namespace Microsoft.AspNetCore.Builder
             var siloName = string.IsNullOrEmpty(config.GetValue<string>(EnvironmentVariables.OrleansSiloName))
                 ? Defaults.SiloName
                 : config.GetValue<string>(EnvironmentVariables.OrleansSiloName);
-            
+            var siloPort = string.IsNullOrEmpty(config.GetValue<string>(EnvironmentVariables.OrleansSiloPort))
+                ? Defaults.SiloPort
+                : config.GetValue<int>(EnvironmentVariables.OrleansSiloPort);
+            var gatewayPort = string.IsNullOrEmpty(config.GetValue<string>(EnvironmentVariables.OrleansGatewayPort))
+                ? Defaults.GatewayPort
+                : config.GetValue<int>(EnvironmentVariables.OrleansGatewayPort);
+
             webApplicationBuilder.Host.UseOrleans(siloBuilder =>
-            {
+            {                
+#if DEBUG
                 // set up the cluster's id and service name
                 siloBuilder.Configure<ClusterOptions>(clusterOptions =>
                 {
@@ -34,9 +41,12 @@ namespace Microsoft.AspNetCore.Builder
                 // set up the silo name
                 siloBuilder.Configure<SiloOptions>(options => options.SiloName = siloName);
 
+                // configure silo and gateway ports
+                siloBuilder.ConfigureEndpoints(siloPort: siloPort, gatewayPort: gatewayPort);
+#else
                 // use Kubernetes hosting
                 siloBuilder.UseKubernetesHosting();
-
+#endif
                 // use table storage for clustering
                 siloBuilder.UseAzureStorageClustering(options =>
                     options.ConfigureTableServiceClient(storageConnectionString));
@@ -46,9 +56,9 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     options.ConfigureTableServiceClient(storageConnectionString);
                 });
-
+                
                 // do any extra work the silo has requested
-                if(siloAction != null)
+                if (siloAction != null)
                 {
                     siloAction(siloBuilder);
                 }

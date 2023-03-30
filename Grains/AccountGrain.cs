@@ -50,9 +50,6 @@ namespace WoodgroveBank.Grains
             return transaction.TransactionAllowed;
         }
 
-        // c: e540a5a3-0a65-46f1-a0e3-0f315cdda631
-        // a: f678c1a0-90f6-4ac1-aafa-e5acc87cd6a9
-
         private async Task<bool> SubmitTransaction(Transaction transaction)
         {
             await _accountState.ReadStateAsync();

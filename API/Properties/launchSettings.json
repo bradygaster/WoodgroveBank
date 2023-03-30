@@ -6,16 +6,13 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ORLEANS_SILO_PORT": "11111",
+        "ORLEANS_GATEWAY_PORT": "30000",
+        "ORLEANS_SILO_NAME": "WoodGroveAPI"
       },
       "applicationUrl": "http://localhost:5000",
       "dotnetRunMessages": true
-    },
-    "Docker": {
-      "commandName": "Docker",
-      "launchBrowser": true,
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
-      "publishAllPorts": true
     }
   }
 }

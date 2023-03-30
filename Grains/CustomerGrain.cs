@@ -1,20 +1,22 @@
-﻿using Orleans;
+﻿using Microsoft.Extensions.Logging;
 using Orleans.Runtime;
 using WoodgroveBank.Abstractions;
-using WoodgroveBank.Infrastructure;
 
 namespace WoodgroveBank.Grains
 {
     public class CustomerGrain : Grain, ICustomerGrain
     {
-        private IPersistentState<Customer> _customerState { get; set; }
-        private IPersistentState<List<Account>> _customerAccounts { get; set; }
+        private IPersistentState<Customer> _customerState;
+        private IPersistentState<List<Account>> _customerAccounts;
+        private readonly ILogger<CustomerGrain> _logger;
 
         public CustomerGrain([PersistentState("customer")] IPersistentState<Customer> customerState,
-            [PersistentState("customerAccounts")] IPersistentState<List<Account>> customerAccounts)
+            [PersistentState("customerAccounts")] IPersistentState<List<Account>> customerAccounts,
+            ILogger<CustomerGrain> logger)
         {
             _customerState = customerState;
             _customerAccounts = customerAccounts;
+            _logger = logger;
         }
 
         public async Task<Customer> SaveCustomer(Customer customer)
