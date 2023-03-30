@@ -29,14 +29,13 @@ namespace WoodgroveBank.Grains
         }
         public async Task UpdateCustomerIndex(Customer customer)
         {
-            await _customerIndex.ReadStateAsync();
             if (!_customerIndex.State.Any(x => x.Id == customer.Id))
             {
                 _customerIndex.State.Add(customer);
                 await _customerIndex.WriteStateAsync();
             }
 
-            await _observers.Notify(_ => _.OnCustomerIndexUpdated(customer));
+            _observers.Notify(_ => _.OnCustomerIndexUpdated(customer));
         }
 
         public Task<Transaction[]> GetRecentTransactions()

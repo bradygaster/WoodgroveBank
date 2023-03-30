@@ -31,10 +31,9 @@ app.Run();
 
 public class AdminDashboardObserver : IAdminDashboardObserver
 {
-    public Task OnCustomerIndexUpdated(Customer customer)
+    public void OnCustomerIndexUpdated(Customer customer)
     {
         Console.WriteLine($"{customer.Name} updated");
-        return Task.CompletedTask;
     }
 }
 

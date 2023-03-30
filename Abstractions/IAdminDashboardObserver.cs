@@ -2,6 +2,6 @@
 {
     public interface IAdminDashboardObserver : IGrainObserver
     {
-        Task OnCustomerIndexUpdated(Customer customer);
+        void OnCustomerIndexUpdated(Customer customer);
     }
 }
