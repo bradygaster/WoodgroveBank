@@ -19,9 +19,10 @@ namespace WoodgroveBank.Grains
         {
             _customerIndex = customerIndex;
             _transactionListState = transactionListState;
-            _observers = new ObserverManager<IAdminDashboardObserver>(TimeSpan.FromSeconds(60), _logger);
             _logger = logger;
+            _observers = new ObserverManager<IAdminDashboardObserver>(TimeSpan.FromSeconds(60), _logger);
         }
+        
         public async Task<Customer[]> GetCustomers()
         {
             await _customerIndex.ReadStateAsync();

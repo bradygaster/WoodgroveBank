@@ -1,7 +1,5 @@
 ﻿@page "/customers"
-@using Orleans
 @using WoodgroveBank.Abstractions
-@inject IGrainFactory _grainFactory;
 @implements IDisposable
 
 <PageTitle>Customers</PageTitle>
@@ -44,13 +42,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var grain = _grainFactory.GetGrain<IBankGrain>(Guid.Empty);
-
         await base.OnInitializedAsync();
     }
 
     public void Dispose()
     {
-        var grain = _grainFactory.GetGrain<IBankGrain>(Guid.Empty);
     }
 }

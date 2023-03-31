@@ -11,7 +11,7 @@
         "ORLEANS_GATEWAY_PORT": "30000",
         "ORLEANS_SILO_NAME": "WoodGroveAPI"
       },
-      "applicationUrl": "http://localhost:5000",
+      "applicationUrl": "http://localhost:31000",
       "dotnetRunMessages": true
     }
   }
