@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Orleans.Runtime;
-using Orleans.Utilities;
 using WoodgroveBank.Abstractions;
 
 namespace WoodgroveBank.Grains
@@ -9,7 +8,6 @@ namespace WoodgroveBank.Grains
     {
         private IPersistentState<List<Transaction>> _transactionListState;
         private IPersistentState<List<Customer>> _customerIndex;
-        private readonly ObserverManager<IAdminDashboardObserver> _observers;
         private readonly ILogger<BankGrain> _logger;
 
         public BankGrain(
@@ -20,7 +18,6 @@ namespace WoodgroveBank.Grains
             _customerIndex = customerIndex;
             _transactionListState = transactionListState;
             _logger = logger;
-            _observers = new ObserverManager<IAdminDashboardObserver>(TimeSpan.FromSeconds(60), _logger);
         }
         
         public async Task<Customer[]> GetCustomers()
@@ -36,7 +33,11 @@ namespace WoodgroveBank.Grains
                 await _customerIndex.WriteStateAsync();
             }
 
-            _observers.Notify(_ => _.OnCustomerIndexUpdated(customer));
+            // push the update to the steam
+            var streamProvider = this.GetStreamProvider("ADMIN");
+            var recentCustomerStreamId = StreamId.Create("ADMIN", "RECENT_CUSTOMERS");
+            var stream = streamProvider.GetStream<Customer>(recentCustomerStreamId);
+            stream.OnNextAsync(customer);
         }
 
         public Task<Transaction[]> GetRecentTransactions()
@@ -48,39 +49,6 @@ namespace WoodgroveBank.Grains
         {
             await _customerIndex.ReadStateAsync();
             return _customerIndex.State.FirstOrDefault(x => x.Pin == pin);
-        }
-
-        public Task Subscribe(IAdminDashboardObserver observer)
-        {
-            if (observer == null)
-                _logger.LogWarning("Observer is null");
-
-            if (_observers == null)
-                _logger.LogWarning("_observers is null");
-
-            if (observer != null && _observers != null)
-            {
-                _logger.LogInformation("Subscribing...");
-
-                try
-                {
-                    _observers.Subscribe(observer, observer);
-                    _logger.LogInformation("Subscribed");
-                }
-                catch(Exception ex)
-                {
-                    _logger.LogError("Error during subscribing", ex);
-                }
-            }
-
-            return Task.CompletedTask;
-        }
-
-        public Task Unsubscribe(IAdminDashboardObserver observer)
-        {
-            if (observer != null)
-                _observers.Unsubscribe(observer);
-            return Task.CompletedTask;
         }
     }
 }

@@ -56,7 +56,14 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     options.ConfigureTableServiceClient(storageConnectionString);
                 });
-                
+
+                // set up streaming
+                siloBuilder.AddMemoryStreams("ADMIN")
+                           .AddAzureTableGrainStorage("PubSubStore", options =>
+                           {
+                               options.ConfigureTableServiceClient(storageConnectionString);
+                           });
+
                 // do any extra work the silo has requested
                 if (siloAction != null)
                 {

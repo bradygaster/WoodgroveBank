@@ -2,7 +2,7 @@
   "profiles": {
     "Admin": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "launchUrl": "customers",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",

@@ -1,5 +1,6 @@
 ﻿@page "/customers"
 @using WoodgroveBank.Abstractions
+@inject CustomerReceivedProxy _proxy
 @implements IDisposable
 
 <PageTitle>Customers</PageTitle>
@@ -40,12 +41,24 @@ else
 @code {
     List<Customer> _customers = new();
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        await base.OnInitializedAsync();
+        _proxy.CustomerReceived += OnCustomerIndexUpdated;
+    }
+
+    protected void OnCustomerIndexUpdated(object sender, Customer customer)
+    {
+        if(_customers.Count > 30)
+        {
+            _customers = _customers.Take(29).ToList();
+        }
+        _customers.Insert(0, customer);
+
+        InvokeAsync(() => StateHasChanged());
     }
 
     public void Dispose()
     {
+        _proxy.CustomerReceived -= OnCustomerIndexUpdated;
     }
 }
