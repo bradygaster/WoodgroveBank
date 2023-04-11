@@ -1,10 +1,10 @@
-﻿using Orleans;
+﻿using Orleans.Concurrency;
 using Orleans.Runtime;
 using WoodgroveBank.Abstractions;
-using WoodgroveBank.Infrastructure;
 
 namespace WoodgroveBank.Grains
 {
+    [Reentrant]
     public class AccountGrain : Grain, IAccountGrain
     {
         public AccountGrain([PersistentState("account")] IPersistentState<Account> accountState,
@@ -101,7 +101,7 @@ namespace WoodgroveBank.Grains
 
             await GrainFactory.GetGrain<ICustomerGrain>(transaction.CustomerId).ReceiveAccountUpdate(_accountState.State);
 
-            return transaction.TransactionAllowed;
+            return transaction.TransactionAllowed && transaction.ResultingAccountBalance > 0;
         }
 
         public async Task<Transaction[]> GetTransactions()
@@ -109,5 +109,7 @@ namespace WoodgroveBank.Grains
             await _accountState.ReadStateAsync();
             return _transactionListState.State.ToArray();
         }
+
+        public Task<decimal> GetBalance() => Task.FromResult(_accountState.State.Balance);
     }
 }

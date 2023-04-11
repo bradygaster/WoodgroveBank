@@ -36,20 +36,21 @@ public class Simulator : BackgroundService
                 {
                     var account = accounts[Random.Shared.Next(0, accounts.Length)];
                     var accountGrain = _clusterClient.GetGrain<IAccountGrain>(account.Id);
-                    var amount = Random.Shared.Next(0, (int)account.Balance + 2);
+                    var balance = await accountGrain.GetBalance();
+                    var amount = Random.Shared.Next(0, (int)account.Balance + 10);
                     var result = await accountGrain.Withdraw(amount);
                     
                     if (result == false)
                     {
-                        _logger.LogInformation($"Withdrawal of {amount} from account {account.Id} failed");
+                        _logger.LogError($"Withdrawal of {amount} from account {account.Id} failed");
 
                         amount = Random.Shared.Next(100, 1000);
 
-                        _logger.LogInformation($"Depositing {amount} into account {account.Id}");
+                        _logger.LogWarning($"Depositing {amount} into account {account.Id}");
                         var depositResult = await accountGrain.Deposit(amount);
                         if(depositResult)
                         {
-                            _logger.LogInformation($"Deposited {amount} into account {account.Id}");
+                            _logger.LogWarning($"Deposited {amount} into account {account.Id}");
                         }
                     }
                     else

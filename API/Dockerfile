@@ -10,8 +10,8 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["API/API.csproj", "API/"]
 COPY ["Abstractions/Abstractions.csproj", "Abstractions/"]
-COPY ["Grains/Grains.csproj", "Grains/"]
 COPY ["Infrastructure/Infrastructure.csproj", "Infrastructure/"]
+COPY ["Grains/Grains.csproj", "Grains/"]
 RUN dotnet restore "API/API.csproj"
 COPY . .
 WORKDIR "/src/API"
