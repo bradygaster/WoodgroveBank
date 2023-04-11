@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Simulations": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ORLEANS_SILO_PORT": "11114",
+        "ORLEANS_GATEWAY_PORT": "30003",
+        "ORLEANS_SILO_NAME": "Simulator"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5006"
+    }
+  }
+}

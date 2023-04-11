@@ -73,7 +73,6 @@ namespace WoodgroveBank.Grains
             else
             {
                 _customerAccounts.State.First(x => x.Id == account.Id).Balance = account.Balance;
-                await GrainFactory.GetGrain<IAccountGrain>(account.Id).SaveAccount(account);
             }
 
             await _customerAccounts.WriteStateAsync();

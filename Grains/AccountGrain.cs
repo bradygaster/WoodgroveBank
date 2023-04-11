@@ -81,6 +81,9 @@ namespace WoodgroveBank.Grains
                 {
                     // account would overdraft - halt the transaction
                     transaction.TransactionAllowed = false;
+
+                    // now enable the overdraft penalty charge to their account
+                    transaction.TransactionType = TransactionType.OverdraftPenalty;
                 }
             }
 
