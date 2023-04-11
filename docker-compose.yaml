@@ -54,6 +54,19 @@ services:
       - 11111:11111
       - 30000:30000
 
+  simulations:
+    image: woodgrovebank-simulations:latest
+    build:
+      context: .
+      dockerfile: Simulations/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    hostname: api
+    ports:
+      - 5004:80
+      - 11111:11111
+      - 30000:30000
+
   orleans-scaler:
     image: orleans-scaler:latest
     build:

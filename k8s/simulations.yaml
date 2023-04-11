@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: woodgrovebank-simulations
+  labels:
+    orleans/serviceId: woodgrovebank
+spec:
+  selector:
+    matchLabels:
+      app: woodgrovebank-simulations
+      orleans/serviceId: woodgrovebank
+  template:
+    metadata:
+      labels:
+        app: woodgrovebank-simulations
+        orleans/serviceId: woodgrovebank
+        orleans/clusterId: woodgrovebank
+    spec:
+      containers:
+      - name: woodgrovebank-simulations
+        image: woodgrovebank-simulations:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        - containerPort: 30000
+        - containerPort: 11111
+        env:
+          - name: ORLEANS_SERVICE_ID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.labels['orleans/serviceId']
+          - name: ORLEANS_CLUSTER_ID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.labels['orleans/clusterId']
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: ORLEANS_AZURE_STORAGE_CONNECTION_STRING
+            valueFrom: 
+              secretKeyRef: 
+                key: clustering
+                name: storage-connection-strings
+          - name: ASPNETCORE_ENVIRONMENT
+            value: 'Development'
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"

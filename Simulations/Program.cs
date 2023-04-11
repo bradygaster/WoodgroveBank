@@ -60,7 +60,7 @@ public class Simulator : BackgroundService
                 }
             }
 
-            await Task.Delay(100, stoppingToken);
+            await Task.Delay(Random.Shared.Next(100, 2000), stoppingToken);
         }
     }
 }
