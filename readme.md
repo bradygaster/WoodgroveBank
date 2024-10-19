@@ -65,7 +65,7 @@ Presuming a local Kubernetes setup. In the case of this document, Docker Desktop
 
     ```bash
     kubectl apply -f ./k8s/api.yaml
-    kubectl apply -f ./k8s/admin.yaml
+    kubectl apply -f ./k8s/bank.yaml
     kubectl apply -f ./k8s/simulations.yaml
     kubectl apply -f ./k8s/dashboard.yaml
     ```

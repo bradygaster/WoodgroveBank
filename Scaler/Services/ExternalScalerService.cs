@@ -1,8 +1,6 @@
 ﻿
-using Grpc.Core;
 using Externalscaler;
-using Orleans;
-using Orleans.Runtime;
+using Grpc.Core;
 
 namespace Scaler.Services
 {
