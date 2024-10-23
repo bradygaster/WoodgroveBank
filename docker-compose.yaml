@@ -15,14 +15,14 @@ services:
       - 11111:11111
       - 30000:30000
 
-  admin:
-    image: woodgrovebank-admin:latest
+  bank:
+    image: woodgrovebank-bank:latest
     build:
       context: .
-      dockerfile: Admin/Dockerfile
+      dockerfile: Bank/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-    hostname: admin
+    hostname: bank
     ports:
       - 5001:80
       - 11111:11111

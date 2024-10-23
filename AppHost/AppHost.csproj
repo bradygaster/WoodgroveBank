@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0-rc.1.24511.1" />
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsAspireHost>true</IsAspireHost>
+		<UserSecretsId>3172a7c0-472b-4e35-be77-8ff0b57bdc00</UserSecretsId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0-rc.1.24511.1" />
+		<PackageReference Include="Aspire.Hosting.Azure.Storage" Version="9.0.0-rc.2.24516.6" />
+		<PackageReference Include="Aspire.Hosting.Orleans" Version="9.0.0-rc.2.24516.6" />
+		<PackageReference Include="Aspire.Hosting.Azure.AppContainers" Version="9.0.0-rc.1.24511.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Bank\Bank.csproj" />
+		<ProjectReference Include="..\API\API.csproj" />
+		<ProjectReference Include="..\Scaler\Scaler.csproj" />
+		<ProjectReference Include="..\Simulations\Simulations.csproj" />
+	</ItemGroup>
+
+</Project>

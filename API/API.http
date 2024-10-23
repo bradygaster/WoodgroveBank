@@ -1,0 +1,14 @@
+﻿@API_HostAddress = https://localhost:7510
+
+POST {{API_HostAddress}}/customers
+Content-Type: application/json
+
+{
+  "id": "87f9d695-3d16-405d-9202-e088e08e3944",
+  "name": "Bill Harley",
+  "city": "Sanford, NC",
+  "country": "USA",
+  "pin": "2222"
+}
+
+###

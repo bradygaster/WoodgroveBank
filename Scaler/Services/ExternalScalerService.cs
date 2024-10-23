@@ -1,8 +1,6 @@
 ﻿
-using Grpc.Core;
 using Externalscaler;
-using Orleans;
-using Orleans.Runtime;
+using Grpc.Core;
 
 namespace Scaler.Services
 {
@@ -10,18 +8,20 @@ namespace Scaler.Services
     {
         ILogger<ExternalScalerService> _logger;
         IManagementGrain _managementGrain;
-        IGrainFactory _grainFactory;
+        IClusterClient _clusterClient;
         string _metricName = "grainThreshold";
 
-        public ExternalScalerService(IGrainFactory grainFactory, ILogger<ExternalScalerService> logger)
+        public ExternalScalerService(IClusterClient clusterClient, ILogger<ExternalScalerService> logger)
         {
-            _grainFactory = grainFactory;
-            _managementGrain = _grainFactory.GetGrain<IManagementGrain>(0);
+            _clusterClient = clusterClient;
+            _managementGrain = clusterClient.GetGrain<IManagementGrain>(0);
             _logger = logger;
         }
 
         public override async Task<GetMetricsResponse> GetMetrics(GetMetricsRequest request, ServerCallContext context)
         {
+            _logger.LogInformation($"GetMetrics being called");
+
             CheckRequestMetadata(request.ScaledObjectRef);
 
             var response = new GetMetricsResponse();
@@ -41,6 +41,8 @@ namespace Scaler.Services
 
         public override Task<GetMetricSpecResponse> GetMetricSpec(ScaledObjectRef request, ServerCallContext context)
         {
+            _logger.LogInformation($"GetMetricSpec being called");
+
             CheckRequestMetadata(request);
 
             var resp = new GetMetricSpecResponse();
@@ -56,6 +58,8 @@ namespace Scaler.Services
 
         public override async Task StreamIsActive(ScaledObjectRef request, IServerStreamWriter<IsActiveResponse> responseStream, ServerCallContext context)
         {
+            _logger.LogInformation($"StreamIsActive being called");
+
             CheckRequestMetadata(request);
 
             while (!context.CancellationToken.IsCancellationRequested)
@@ -75,6 +79,8 @@ namespace Scaler.Services
 
         public override async Task<IsActiveResponse> IsActive(ScaledObjectRef request, ServerCallContext context)
         {
+            _logger.LogInformation($"IsActive being called");
+
             CheckRequestMetadata(request);
 
             var result = await AreTooManyGrainsInTheCluster(request);

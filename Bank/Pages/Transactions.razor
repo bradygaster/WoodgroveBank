@@ -1,0 +1,62 @@
+﻿@page "/transactions"
+@using System.Globalization
+@inject TransactionProcessedStreamHandler transactionProcessedStreamHandler
+@inject Orleans.IGrainFactory _grainFactory;
+
+<PageTitle>Recent Transactions</PageTitle>
+
+<h1>Recent Transactions</h1>
+
+<p>The grid below shows the most recent transactions.</p>
+
+@if (_transactions == null || !_transactions.Any())
+{
+    <h3>No recent transactions.</h3>
+}
+else
+{
+    <table class="table">
+        <tr>
+            <th>Customer</th>
+            <th>Transaction Type</th>
+            <th>Initial Account Balance</th>
+            <th>Resulting Account Balance</th>
+        </tr>
+        @foreach (var transaction in _transactions)
+        {
+            <tr>
+                <td>@transaction.Customer.Name</td>
+                <td>@transaction.Transaction.TransactionType</td>
+                <td>@transaction.Transaction.InitialAccountBalance.ToString("C", CultureInfo.CurrentCulture)</td>
+                <td>@transaction.Transaction.ResultingAccountBalance.ToString("C", CultureInfo.CurrentCulture)</td>
+            </tr>
+        }
+    </table>
+}
+
+@code
+{
+    List<TransactionProcessedEventArgs> _transactions = new();
+
+    protected override void OnInitialized()
+    {
+        transactionProcessedStreamHandler.TransactionReceived += OnTransactionReceived;
+    }
+
+    protected void OnTransactionReceived(object? sender, TransactionProcessedEventArgs args)
+    {
+        if (_transactions.Count > 18)
+        {
+            _transactions = _transactions.Take(18).ToList();
+        }
+
+        _transactions.Insert(0, args);
+
+        InvokeAsync(() => StateHasChanged());
+    }
+
+    public void Dispose()
+    {
+        transactionProcessedStreamHandler.TransactionReceived -= OnTransactionReceived;
+    }
+}

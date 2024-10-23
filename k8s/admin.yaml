@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: woodgrovebank-admin
+  name: woodgrovebank-bank
 spec:
   selector:
-    app: woodgrovebank-admin
+    app: woodgrovebank-bank
   ports:
   - port: 80
     targetPort: 80
@@ -12,24 +12,24 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: woodgrovebank-admin
+  name: woodgrovebank-bank
   labels:
     orleans/serviceId: woodgrovebank
 spec:
   selector:
     matchLabels:
-      app: woodgrovebank-admin
+      app: woodgrovebank-bank
       orleans/serviceId: woodgrovebank
   template:
     metadata:
       labels:
-        app: woodgrovebank-admin
-        orleans/serviceId: woodgrovebank
+        app: woodgrovebank-bank
+        orleans/serviceId: bank
         orleans/clusterId: woodgrovebank
     spec:
       containers:
-      - name: woodgrovebank-admin
-        image: woodgrovebank-admin:latest
+      - name: woodgrovebank-bank
+        image: woodgrovebank-bank:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 80
@@ -71,7 +71,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: admin-ingress
+  name: bank-ingress
   annotations:
     ingress.kubernetes.io/ssl-redirect: "false"
     kubernetes.io/ingress.class: nginx
@@ -81,18 +81,18 @@ spec:
     - host: localhost
       http:
         paths:
-          - path: /admin
+          - path: /bank
             pathType: Prefix
             backend:
               service: 
-                name: woodgrovebank-admin
+                name: woodgrovebank-bank
                 port: 
                   number: 80
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: woodgrovebank-admin-nodeport
+  name: woodgrovebank-bank-nodeport
 spec:
   ports:
   - name: http
@@ -101,7 +101,7 @@ spec:
     protocol: TCP
     targetPort: 80
   selector:
-    app: woodgrovebank-admin
+    app: woodgrovebank-bank
   sessionAffinity: None
   type: NodePort
 status:

@@ -4,22 +4,27 @@
 		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<UserSecretsId>d160af40-cfbe-4c53-a542-81851aa2fb5e</UserSecretsId>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<RootNamespace>WoodgroveBank.Web</RootNamespace>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<Protobuf Include="Protos\externalscaler.proto" GrpcServices="Server" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Aspire.Azure.Data.Tables" Version="9.0.0-rc.2.24516.6" />
 		<PackageReference Include="Aspire.Azure.Storage.Blobs" Version="9.0.0-rc.2.24516.6" />
-		<PackageReference Include="Grpc.AspNetCore" Version="2.66.0" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Abstractions\Abstractions.csproj" />
 		<ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
 		<ProjectReference Include="..\ServiceDefaults\ServiceDefaults.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="WoodgroveBank.Abstractions" />
+		<Using Include="WoodgroveBank.Infrastructure" />
+		<Using Include="WoodgroveBank.Web.Events" />
+		<Using Include="WoodgroveBank.Web" />
+		<Using Include="Microsoft.AspNetCore.Components.Web" />
 	</ItemGroup>
 
 </Project>

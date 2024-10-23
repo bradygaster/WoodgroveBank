@@ -1,0 +1,54 @@
+﻿@page "/"
+@inject CustomerReceivedStreamHandler customerReceivedStreamHandler
+@implements IDisposable
+
+<PageTitle>New Customers</PageTitle>
+
+<h1>New Customers</h1>
+
+<p>Here is a list of new Woodgrove Bank customers.</p>
+
+@if (_customers == null || !_customers.Any())
+{
+    <h3>No recent customer activity.</h3>
+}
+else
+{
+    <table class="table">
+        <tbody>
+            @foreach(var customer in _customers)
+            {
+                <tr>
+                    <td>@customer.Name</td>
+                    <td>@customer.City</td>
+                    <td>@customer.Country</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<Customer> _customers = new();
+
+    protected override void OnInitialized()
+    {
+        customerReceivedStreamHandler.CustomerReceived += OnCustomerIndexUpdated;
+    }
+
+    protected void OnCustomerIndexUpdated(object? sender, Customer customer)
+    {
+        if(_customers.Count > 30)
+        {
+            _customers = _customers.Take(29).ToList();
+        }
+        _customers.Insert(0, customer);
+
+        InvokeAsync(() => StateHasChanged());
+    }
+
+    public void Dispose()
+    {
+        customerReceivedStreamHandler.CustomerReceived -= OnCustomerIndexUpdated;
+    }
+}
