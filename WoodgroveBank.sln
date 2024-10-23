@@ -22,17 +22,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scaler", "Scaler\Scaler.csproj", "{774713B7-C4C4-4FBC-8291-95FBB55B3A44}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deploy", "Deploy", "{1E9574E4-2E42-4FF1-8D6A-D2F45F704ACF}"
-	ProjectSection(SolutionItems) = preProject
-		k8s\api.yaml = k8s\api.yaml
-		k8s\azurite.yaml = k8s\azurite.yaml
-		k8s\bank.yaml = k8s\bank.yaml
-		k8s\dashboard.yaml = k8s\dashboard.yaml
-		k8s\nslookup.yml = k8s\nslookup.yml
-		k8s\role-binding.yaml = k8s\role-binding.yaml
-		k8s\scaler.yaml = k8s\scaler.yaml
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulations", "Simulations\Simulations.csproj", "{A3F417DF-D30A-472D-9A1E-401EE13ACB36}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppHost", "AppHost\AppHost.csproj", "{DFD533A0-13E8-4DF9-B50C-A3E5FCB9806A}"
