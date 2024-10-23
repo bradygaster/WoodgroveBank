@@ -2,14 +2,18 @@
 {
     public static class WoodgroveBankWebApplicationBuilderOrleansExtension
     {
-        public static WebApplicationBuilder AddWoodgroveBankSilo(this WebApplicationBuilder builder)
+        public static WebApplicationBuilder AddWoodgroveBankSilo(this WebApplicationBuilder builder, 
+            Action<ISiloBuilder>? siloBuilderCallback = null)
         {
             builder.AddKeyedAzureTableClient("clustering");
             builder.AddKeyedAzureBlobClient("grainState");
             builder.AddKeyedAzureBlobClient("PubSubStore");
             builder.UseOrleans(silo =>
             {
-                silo.AddMemoryStreams("BANK");
+                if(siloBuilderCallback is not null)
+                {
+                    siloBuilderCallback(silo);
+                }
             });
 
             return builder;

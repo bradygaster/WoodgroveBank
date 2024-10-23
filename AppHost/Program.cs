@@ -1,5 +1,7 @@
 #pragma warning disable AZPROVISION001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
+using Azure.Provisioning.AppContainers;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var storage = builder.AddAzureStorage("storage")
@@ -16,10 +18,24 @@ var orleans = builder.AddOrleans("orleans")
 
 var api = builder.AddProject<Projects.API>("api")
                  .WithReference(orleans)
-                 .PublishAsAzureContainerApp((module, containerApp) =>
+                 .PublishAsAzureContainerApp((module, app) =>
                  {
-                     containerApp.Template.Value!.Scale.Value!.MaxReplicas = 3;
-                     containerApp.Template.Value!.Scale.Value!.MinReplicas = 3;
+                     app.Template.Value!.Scale.Value!.Rules = [
+                       new ContainerAppScaleRule()
+                       {
+                           Name = "orleans",
+                           Custom = new ContainerAppCustomScaleRule()
+                           {
+                               CustomScaleRuleType = "external",
+                               Metadata = {
+                                   { "scalerAddress", "scaler" },
+                                   { "grainThreshold", "30" },
+                                   { "graintype", "CustomerGrain" },
+                                   { "siloNameFilter", "api" }
+                               }
+                           }
+                       }
+                    ];
                  });
 
 var bank = builder.AddProject<Projects.Bank>("bank")
@@ -29,6 +45,7 @@ var bank = builder.AddProject<Projects.Bank>("bank")
        {
            containerApp.Template.Value!.Scale.Value!.MaxReplicas = 1;
            containerApp.Template.Value!.Scale.Value!.MinReplicas = 1;
+           containerApp.Template.Value!.Scale.Value!.Rules = [];
        });
 
 builder.AddProject<Projects.Scaler>("scaler")
@@ -40,6 +57,7 @@ builder.AddProject<Projects.Scaler>("scaler")
        {
            containerApp.Template.Value!.Scale.Value!.MaxReplicas = 1;
            containerApp.Template.Value!.Scale.Value!.MinReplicas = 1;
+           containerApp.Template.Value!.Scale.Value!.Rules = [];
        });
 
 builder.AddProject<Projects.Simulations>("simulations")
@@ -51,6 +69,7 @@ builder.AddProject<Projects.Simulations>("simulations")
        {
            containerApp.Template.Value!.Scale.Value!.MaxReplicas = 1;
            containerApp.Template.Value!.Scale.Value!.MinReplicas = 1;
+           containerApp.Template.Value!.Scale.Value!.Rules = [];
        });
 
 builder.Build().Run();

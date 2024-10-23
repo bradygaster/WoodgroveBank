@@ -3,7 +3,7 @@ using Simulations;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-builder.AddWoodgroveBankSilo();
+builder.AddWoodgroveBankSilo(silo => silo.AddMemoryStreams("BANK"));
 builder.Services.AddHttpClient<WoodgroveBankApiClient>(client =>
 {
     client.BaseAddress = new("https+http://api");

@@ -1,7 +1,7 @@
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-builder.AddWoodgroveBankSilo(); 
+builder.AddWoodgroveBankSilo(silo => silo.AddMemoryStreams("BANK")); 
 builder.Services.AddOpenApi("WoodgroveApi");
 
 var app = builder.Build();

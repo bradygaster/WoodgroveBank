@@ -20,6 +20,8 @@ namespace Scaler.Services
 
         public override async Task<GetMetricsResponse> GetMetrics(GetMetricsRequest request, ServerCallContext context)
         {
+            _logger.LogInformation($"GetMetrics being called");
+
             CheckRequestMetadata(request.ScaledObjectRef);
 
             var response = new GetMetricsResponse();
@@ -39,6 +41,8 @@ namespace Scaler.Services
 
         public override Task<GetMetricSpecResponse> GetMetricSpec(ScaledObjectRef request, ServerCallContext context)
         {
+            _logger.LogInformation($"GetMetricSpec being called");
+
             CheckRequestMetadata(request);
 
             var resp = new GetMetricSpecResponse();
@@ -54,6 +58,8 @@ namespace Scaler.Services
 
         public override async Task StreamIsActive(ScaledObjectRef request, IServerStreamWriter<IsActiveResponse> responseStream, ServerCallContext context)
         {
+            _logger.LogInformation($"StreamIsActive being called");
+
             CheckRequestMetadata(request);
 
             while (!context.CancellationToken.IsCancellationRequested)
@@ -73,6 +79,8 @@ namespace Scaler.Services
 
         public override async Task<IsActiveResponse> IsActive(ScaledObjectRef request, ServerCallContext context)
         {
+            _logger.LogInformation($"IsActive being called");
+
             CheckRequestMetadata(request);
 
             var result = await AreTooManyGrainsInTheCluster(request);
