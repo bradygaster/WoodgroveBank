@@ -6,8 +6,8 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<CustomerReceivedStreamHandler>();
 builder.Services.AddSingleton<TransactionProcessedStreamHandler>();
-builder.Services.AddHostedService(sp => sp.GetRequiredService<CustomerReceivedStreamHandler>());
-builder.Services.AddHostedService(sp => sp.GetRequiredService<TransactionProcessedStreamHandler>());
+builder.Services.AddSingleton<StreamProcessingWorker>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<StreamProcessingWorker>());
 
 var app = builder.Build();
 

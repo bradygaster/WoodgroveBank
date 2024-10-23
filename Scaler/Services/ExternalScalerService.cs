@@ -8,13 +8,13 @@ namespace Scaler.Services
     {
         ILogger<ExternalScalerService> _logger;
         IManagementGrain _managementGrain;
-        IGrainFactory _grainFactory;
+        IClusterClient _clusterClient;
         string _metricName = "grainThreshold";
 
-        public ExternalScalerService(IGrainFactory grainFactory, ILogger<ExternalScalerService> logger)
+        public ExternalScalerService(IClusterClient clusterClient, ILogger<ExternalScalerService> logger)
         {
-            _grainFactory = grainFactory;
-            _managementGrain = _grainFactory.GetGrain<IManagementGrain>(0);
+            _clusterClient = clusterClient;
+            _managementGrain = clusterClient.GetGrain<IManagementGrain>(0);
             _logger = logger;
         }
 

@@ -57,7 +57,7 @@ public class NewCustomerSimulator(WoodgroveBankApiClient woodgroveBankApiClient)
                 // just keep going
             }
 
-            await Task.Delay(Random.Shared.Next(3000, 5000), stoppingToken);
+            await Task.Delay(Random.Shared.Next(500, 2000), stoppingToken);
         }
     }
 }
