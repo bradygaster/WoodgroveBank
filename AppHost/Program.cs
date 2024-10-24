@@ -56,7 +56,7 @@ var api = builder.AddProject<Projects.API>("api")
 
                      app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
                      app.Template.Value!.Scale.Value!.MinReplicas = 1;
-                     app.Template.Value!.Scale.Value!.MaxReplicas = 5;
+                     app.Template.Value!.Scale.Value!.MaxReplicas = 8;
                      app.Template.Value!.Scale.Value!.Rules = [
                        new ContainerAppScaleRule()
                        {
@@ -66,7 +66,7 @@ var api = builder.AddProject<Projects.API>("api")
                                CustomScaleRuleType = "external",
                                Metadata = {
                                    { "scalerAddress", scalerEndpoint },
-                                   { "upperbound", "1000" },
+                                   { "upperbound", "250" },
                                    { "graintype", "CustomerGrain" },
                                    { "siloNameFilter", "api" }
                                }
