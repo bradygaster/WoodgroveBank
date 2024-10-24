@@ -140,7 +140,7 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
               type: 'external'
               metadata: {
                 scalerAddress: _scaler_bindings_http_url_
-                upperbound: '100'
+                upperbound: '1000'
                 graintype: 'CustomerGrain'
                 siloNameFilter: 'api'
               }

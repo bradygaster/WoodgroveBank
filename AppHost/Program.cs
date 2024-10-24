@@ -66,7 +66,7 @@ var api = builder.AddProject<Projects.API>("api")
                                CustomScaleRuleType = "external",
                                Metadata = {
                                    { "scalerAddress", scalerEndpoint },
-                                   { "upperbound", "100" },
+                                   { "upperbound", "1000" },
                                    { "graintype", "CustomerGrain" },
                                    { "siloNameFilter", "api" }
                                }
