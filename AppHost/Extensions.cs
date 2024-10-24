@@ -14,7 +14,7 @@ public static class Extensions
 
         infrastructure.AspireResource.Parameters[parameterName] = endpointReference;
 
-        var parameter = infrastructure.GetParameters().FirstOrDefault(p => p.IdentifierName == parameterName);
+        var parameter = infrastructure.GetResources().OfType<ProvisioningParameter>().FirstOrDefault(p => p.IdentifierName == parameterName);
         if (parameter is null)
         {
             parameter = new ProvisioningParameter(parameterName, typeof(string));

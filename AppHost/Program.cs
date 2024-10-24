@@ -1,5 +1,6 @@
 #pragma warning disable AZPROVISION001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
+using AppHost;
 using Azure.Provisioning.AppContainers;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -50,6 +51,8 @@ var api = builder.AddProject<Projects.API>("api")
                  .WaitFor(scaler)
                  .PublishAsAzureContainerApp((module, app) =>
                  {
+                     var scalerEndpoint = scaler.GetEndpoint("http").AsProvisioningParameter(module);
+
                      app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
                      app.Template.Value!.Scale.Value!.MinReplicas = 1;
                      app.Template.Value!.Scale.Value!.MaxReplicas = 5;
@@ -61,7 +64,7 @@ var api = builder.AddProject<Projects.API>("api")
                            {
                                CustomScaleRuleType = "external",
                                Metadata = {
-                                   { "scalerAddress", "scaler:80" },
+                                   { "scalerAddress", scalerEndpoint },
                                    { "upperbound", "100" },
                                    { "graintype", "CustomerGrain" },
                                    { "siloNameFilter", "api" }
