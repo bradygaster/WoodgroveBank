@@ -1,56 +1,43 @@
 ﻿namespace WoodgroveBank.Web.Grains;
 
-public class BankGrain : Grain, IBankGrain
-{
-    private IPersistentState<List<Transaction>> _transactionHistory;
-    private IPersistentState<List<Customer>> _customerIndex;
-    private readonly ILogger<BankGrain> _logger;
-
-    public BankGrain(
+public class BankGrain(
         [PersistentState("customers", "grainState")] IPersistentState<List<Customer>> customerIndex,
         [PersistentState("transactions", "grainState")] IPersistentState<List<Transaction>> transactionHistory,
-        ILogger<BankGrain> logger)
-    {
-        _customerIndex = customerIndex;
-        _transactionHistory = transactionHistory;
-        _logger = logger;
-    }
-    
+        CustomerReceivedStreamHandler customerReceivedStreamHandler,
+        TransactionProcessedStreamHandler transactionProcessedStreamHandler,
+        ILogger<BankGrain> logger) : Grain, IBankGrain
+{    
     public async Task<Customer[]> GetCustomers()
     {
-        await _customerIndex.ReadStateAsync();
-        return _customerIndex.State.ToArray();
+        await customerIndex.ReadStateAsync();
+        return customerIndex.State.ToArray();
     }
 
     public async Task UpdateCustomerIndex(Customer customer)
     {
-        if (!_customerIndex.State.Any(x => x.Id == customer.Id))
+        if (!customerIndex.State.Any(x => x.Id == customer.Id))
         {
-            _customerIndex.State.Add(customer);
-            await _customerIndex.WriteStateAsync();
+            customerIndex.State.Add(customer);
+            await customerIndex.WriteStateAsync();
         }
 
-        // push the update to the steam
-        var streamProvider = this.GetStreamProvider("BANK");
-        var recentCustomerStreamId = StreamId.Create("BANK", "RECENT_CUSTOMERS");
-        var stream = streamProvider.GetStream<Customer>(recentCustomerStreamId);
-        stream.OnNextAsync(customer);
+        customerReceivedStreamHandler.OnCustomerReceived(customer);
     }
 
     public Task<Transaction[]> GetRecentTransactions()
     {
-        return Task.FromResult(_transactionHistory.State.OrderByDescending(x => x.Timestamp).Take(10).ToArray());
+        return Task.FromResult(transactionHistory.State.OrderByDescending(x => x.Timestamp).Take(10).ToArray());
     }
 
     public async Task LogTransaction(Transaction transaction)
     {
-        // push the update to the steam
-        var streamProvider = this.GetStreamProvider("BANK");
-        var recentTransactionStreamId = StreamId.Create("BANK", "RECENT_TRANSACTIONS");
-        var stream = streamProvider.GetStream<Transaction>(recentTransactionStreamId);
-        stream.OnNextAsync(transaction);
+        transactionProcessedStreamHandler.OnTransactionReceived(new TransactionProcessedEventArgs
+        {
+            Transaction = transaction,
+            Customer = customerIndex.State.First(x => x.Id == transaction.CustomerId)
+        });
 
-        _transactionHistory.State.Add(transaction);
-        await _transactionHistory.WriteStateAsync();
+        transactionHistory.State.Add(transaction);
+        await transactionHistory.WriteStateAsync();
     }
 }

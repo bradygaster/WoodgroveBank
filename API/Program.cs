@@ -1,7 +1,14 @@
+using Orleans.Configuration;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-builder.AddWoodgroveBankSilo(silo => silo.AddMemoryStreams("BANK")); 
+builder.AsOrleansSilo(silo =>
+{
+    silo.Configure<SiloOptions>(options => 
+        options.SiloName = $"api_{Path.GetFileNameWithoutExtension(Path.GetRandomFileName())}");
+});
+
 builder.Services.AddOpenApi("WoodgroveApi");
 
 var app = builder.Build();

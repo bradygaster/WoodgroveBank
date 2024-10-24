@@ -1,5 +1,6 @@
 ﻿namespace API.Grains;
 
+[CollectionAgeLimit(Minutes = 2)]
 public class CustomerGrain : Grain, ICustomerGrain
 {
     private IPersistentState<Customer> _customerState;

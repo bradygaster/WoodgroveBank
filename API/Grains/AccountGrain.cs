@@ -3,6 +3,8 @@
 namespace API.Grains;
 
 [Reentrant]
+[CollectionAgeLimit(Minutes = 2)]
+
 public class AccountGrain : Grain, IAccountGrain
 {
     public AccountGrain([PersistentState("account", "grainState")] IPersistentState<Account> accountState,

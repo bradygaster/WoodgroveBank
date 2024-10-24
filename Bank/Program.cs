@@ -1,13 +1,11 @@
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-builder.AddWoodgroveBankSilo(silo => silo.AddMemoryStreams("BANK"));
+builder.AsOrleansSilo();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<CustomerReceivedStreamHandler>();
 builder.Services.AddSingleton<TransactionProcessedStreamHandler>();
-builder.Services.AddSingleton<StreamProcessingWorker>();
-builder.Services.AddHostedService(sp => sp.GetRequiredService<StreamProcessingWorker>());
 
 var app = builder.Build();
 
