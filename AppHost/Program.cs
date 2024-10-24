@@ -37,6 +37,7 @@ var scaler = builder.AddProject<Projects.Scaler>("scaler")
        .AsHttp2Service()
        .PublishAsAzureContainerApp((module, containerApp) =>
        {
+           containerApp.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
            containerApp.Template.Value!.Scale.Value!.MaxReplicas = 1;
            containerApp.Template.Value!.Scale.Value!.MinReplicas = 1;
            containerApp.Template.Value!.Scale.Value!.Rules = [];
