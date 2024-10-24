@@ -27,8 +27,8 @@ else
             <tr>
                 <td>@transaction.Customer.Name</td>
                 <td>@transaction.Transaction.TransactionType</td>
-                <td>@transaction.Transaction.InitialAccountBalance.ToString("C", CultureInfo.CurrentCulture)</td>
-                <td>@transaction.Transaction.ResultingAccountBalance.ToString("C", CultureInfo.CurrentCulture)</td>
+                <td>@transaction.Transaction.InitialAccountBalance.ToString("C3", CultureInfo.CreateSpecificCulture("en-US"))</td>
+                <td>@transaction.Transaction.ResultingAccountBalance.ToString("C3", CultureInfo.CreateSpecificCulture("en-US"))</td>
             </tr>
         }
     </table>

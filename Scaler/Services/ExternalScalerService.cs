@@ -117,7 +117,7 @@ namespace Scaler.Services
         {
             var statistics = await _managementGrain.GetDetailedGrainStatistics();
             var activeGrainsInCluster = statistics.Select(_ => new GrainInfo(_.GrainType, _.GrainId.ToString(), _.SiloAddress.ToGatewayUri().AbsoluteUri));
-            var activeGrainsOfSpecifiedType = activeGrainsInCluster.Where(_ => _.Type.ToLower().Contains(grainType));
+            var activeGrainsOfSpecifiedType = activeGrainsInCluster.Where(_ => _.Type.ToLower().Contains(grainType.ToLower()));
             var detailedHosts = await _managementGrain.GetDetailedHosts();
             var silos = detailedHosts
                             .Where(x => x.Status == SiloStatus.Active)
