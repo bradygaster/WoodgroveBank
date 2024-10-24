@@ -29,6 +29,7 @@ resource scaler 'Microsoft.App/containerApps@2024-03-01' = {
         external: false
         targetPort: scaler_containerport
         transport: 'http2'
+        allowInsecure: true
       }
       registries: [
         {
