@@ -30,9 +30,6 @@ var bank = builder.AddProject<Projects.Bank>("bank")
 
 var scaler = builder.AddProject<Projects.Scaler>("scaler")
        .WithReference(orleans.AsClient())
-       .WaitFor(storage)
-       .WaitFor(clustering)
-       .WaitFor(grainState)
        .WaitFor(bank)
        .AsHttp2Service()
        .PublishAsAzureContainerApp((module, containerApp) =>
@@ -45,9 +42,6 @@ var scaler = builder.AddProject<Projects.Scaler>("scaler")
 
 var api = builder.AddProject<Projects.API>("api")
                  .WithReference(orleans)
-                 .WaitFor(storage)
-                 .WaitFor(clustering)
-                 .WaitFor(grainState)
                  .WaitFor(bank)
                  .WaitFor(scaler)
                  .PublishAsAzureContainerApp((module, app) =>
@@ -56,7 +50,7 @@ var api = builder.AddProject<Projects.API>("api")
 
                      app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
                      app.Template.Value!.Scale.Value!.MinReplicas = 1;
-                     app.Template.Value!.Scale.Value!.MaxReplicas = 8;
+                     app.Template.Value!.Scale.Value!.MaxReplicas = 10;
                      app.Template.Value!.Scale.Value!.Rules = [
                        new ContainerAppScaleRule()
                        {
@@ -66,7 +60,7 @@ var api = builder.AddProject<Projects.API>("api")
                                CustomScaleRuleType = "external",
                                Metadata = {
                                    { "scalerAddress", scalerEndpoint },
-                                   { "upperbound", "250" },
+                                   { "upperbound", "100" },
                                    { "graintype", "CustomerGrain" },
                                    { "siloNameFilter", "api" }
                                }
@@ -78,12 +72,7 @@ var api = builder.AddProject<Projects.API>("api")
 builder.AddProject<Projects.Simulations>("simulations")
        .WithReference(orleans.AsClient())
        .WithReference(api)
-       .WaitFor(storage)
-       .WaitFor(clustering)
-       .WaitFor(grainState)
        .WaitFor(api)
-       .WaitFor(bank)
-       .WaitFor(scaler)
        .PublishAsAzureContainerApp((module, containerApp) =>
        {
            containerApp.Template.Value!.Scale.Value!.MaxReplicas = 1;

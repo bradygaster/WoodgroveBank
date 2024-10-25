@@ -132,7 +132,7 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
       ]
       scale: {
         minReplicas: 1
-        maxReplicas: 8
+        maxReplicas: 10
         rules: [
           {
             name: 'orleans'
@@ -140,7 +140,7 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
               type: 'external'
               metadata: {
                 scalerAddress: _scaler_bindings_http_url_
-                upperbound: '250'
+                upperbound: '100'
                 graintype: 'CustomerGrain'
                 siloNameFilter: 'api'
               }
