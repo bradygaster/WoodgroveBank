@@ -1,4 +1,4 @@
-﻿namespace API.Grains;
+﻿namespace WoodgroveBank.Grains;
 
 [CollectionAgeLimit(Minutes = 2)]
 public class CustomerGrain : Grain, ICustomerGrain
@@ -16,18 +16,23 @@ public class CustomerGrain : Grain, ICustomerGrain
         _logger = logger;
     }
 
+    public async Task<Customer> GetCustomer()
+    {
+        await _customerState.ReadStateAsync();
+        return _customerState.State;
+    }
+
+    public async Task<Account[]> GetAccounts()
+    {
+        await _customerAccounts.ReadStateAsync();
+        return _customerAccounts.State.ToArray();
+    }
+
     public async Task<Customer> SaveCustomer(Customer customer)
     {
         _customerState.State = customer;
         await _customerState.WriteStateAsync();
         await _customerAccounts.WriteStateAsync();
-        return _customerState.State;
-    }
-
-    public async Task<Customer> GetCustomer()
-    {
-        await _customerState.ReadStateAsync();
-        await _customerAccounts.ReadStateAsync();
         return _customerState.State;
     }
 
@@ -53,12 +58,6 @@ public class CustomerGrain : Grain, ICustomerGrain
 
 
         return account;
-    }
-
-    public async Task<Account[]> GetAccounts()
-    {
-        await _customerAccounts.ReadStateAsync();
-        return _customerAccounts.State.ToArray();
     }
 
     public async Task ReceiveAccountUpdate(Account account)

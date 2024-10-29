@@ -6,5 +6,7 @@
         Task LogTransaction(Transaction transaction);
         Task<Transaction[]> GetRecentTransactions();
         Task UpdateCustomerIndex(Customer customer);
+        Task<BankSettings> GetSettings();
+        Task SaveSettings(BankSettings settings);
     }
 }

@@ -7,8 +7,8 @@ public static class CustomerEndpointExtensions
         /// <summary>
         /// Get a list of all the customers.
         /// </summary>
-        app.MapGet("/customers", async (IGrainFactory grainFactory) =>
-            await grainFactory.GetGrain<IBankGrain>(Guid.Empty).GetCustomers()
+        app.MapGet("/customers", async (IClusterClient clusterClient) =>
+            await clusterClient.GetGrain<IBankGrain>(Guid.Empty).GetCustomers()
         )
         .WithTags("Customers")
         .WithName("GetCustomers");
@@ -16,12 +16,12 @@ public static class CustomerEndpointExtensions
         /// <summary>
         /// Create a new customer.
         /// </summary>
-        app.MapPost("/customers", async (IGrainFactory grainFactory, Customer customer) =>
+        app.MapPost("/customers", async (IClusterClient clusterClient, Customer customer) =>
         {
             try
             {
-                var result = await grainFactory.GetGrain<ICustomerGrain>(customer.Id).SaveCustomer(customer);
-                await grainFactory.GetGrain<IBankGrain>(Guid.Empty).UpdateCustomerIndex(customer);
+                var result = await clusterClient.GetGrain<ICustomerGrain>(customer.Id).SaveCustomer(customer);
+                await clusterClient.GetGrain<IBankGrain>(Guid.Empty).UpdateCustomerIndex(customer);
                 return Results.Created($"/customers/{result.Id}", result);
             }
             catch (Exception ex)
@@ -37,9 +37,9 @@ public static class CustomerEndpointExtensions
         /// <summary>
         /// Gets all of a customer's accounts.
         /// </summary>
-        app.MapGet("/customers/{id}/accounts", async (IGrainFactory grainFactory, Guid id) =>
+        app.MapGet("/customers/{id}/accounts", async (IClusterClient clusterClient, Guid id) =>
         {
-            var customerGrain = grainFactory.GetGrain<ICustomerGrain>(id);
+            var customerGrain = clusterClient.GetGrain<ICustomerGrain>(id);
             return Results.Ok(await customerGrain.GetAccounts());
         })
         .WithTags("Accounts")

@@ -1,0 +1,53 @@
+﻿@page "/system"
+@inject IGrainFactory grainFactory
+
+<h3>Settings</h3>
+
+<div class="row" style="min-height: 10px;">
+    Maximum delay (in ms) between new Customer creations: @settings.MaximumDurationBetweenNewCustomers
+</div>
+
+<div class="row" style="min-height: 10px;">
+    <input type="range" min="1" max="10000" value="@settings.MaximumDurationBetweenNewCustomers" @oninput="OnCustomerSliderChange" />
+</div>
+
+<div class="row" style="min-height: 10px; margin-top:40px;">
+    Maximum delay (in ms) between new Transaction creations: @settings.MaximumDurationBetweenNewTransactions
+</div>
+
+<div class="row" style="min-height: 10px;">
+    <input type="range" min="1" max="10000" value="@settings.MaximumDurationBetweenNewTransactions" @oninput="OnTransactionSliderChange" />
+</div>
+
+@code {
+    private BankSettings settings = new();
+    private bool shouldRender = false;
+
+    protected override bool ShouldRender() => shouldRender;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSettings();
+        shouldRender = true;
+    }
+
+    private async Task SaveSettings()
+    {
+        await grainFactory.GetGrain<IBankGrain>(Guid.Empty).SaveSettings(settings);
+        StateHasChanged();
+    }
+
+    private async Task OnCustomerSliderChange(ChangeEventArgs e)
+    {
+        settings.MaximumDurationBetweenNewCustomers = int.Parse(e.Value.ToString());
+        await SaveSettings();
+    }
+
+    private async Task OnTransactionSliderChange(ChangeEventArgs e)
+    {
+        settings.MaximumDurationBetweenNewTransactions = int.Parse(e.Value.ToString());
+        await SaveSettings();
+    }
+
+    private async Task LoadSettings() => settings = await grainFactory.GetGrain<IBankGrain>(Guid.Empty).GetSettings();
+}

@@ -9,8 +9,6 @@ param orleans_cluster_id_value string
 
 param orleans_service_id_value string
 
-param storage_outputs_blobendpoint string
-
 param outputs_azure_container_registry_managed_identity_id string
 
 param outputs_managed_identity_client_id string
@@ -34,16 +32,6 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
         targetPort: api_containerport
         transport: 'http'
         allowInsecure: true
-        additionalPortMappings: [
-          {
-            external: false
-            targetPort: 8000
-          }
-          {
-            external: false
-            targetPort: 8001
-          }
-        ]
       }
       registries: [
         {
@@ -102,26 +90,6 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
             {
               name: 'Orleans__EnableDistributedTracing'
               value: 'true'
-            }
-            {
-              name: 'Orleans__GrainStorage__grainState__ProviderType'
-              value: 'AzureBlobStorage'
-            }
-            {
-              name: 'Orleans__GrainStorage__grainState__ServiceKey'
-              value: 'grainState'
-            }
-            {
-              name: 'ConnectionStrings__grainState'
-              value: storage_outputs_blobendpoint
-            }
-            {
-              name: 'Orleans__Endpoints__SiloPort'
-              value: '8000'
-            }
-            {
-              name: 'Orleans__Endpoints__GatewayPort'
-              value: '8001'
             }
             {
               name: 'AZURE_CLIENT_ID'

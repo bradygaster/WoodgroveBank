@@ -9,9 +9,9 @@ public static class SystemEndpointExtensions
         /// <summary>
         /// Get high-level details about the Orleans cluster.
         /// </summary>
-        app.MapGet("/system/grains", async ([FromServices] IGrainFactory grainFactory) =>
+        app.MapGet("/system/grains", async ([FromServices] IClusterClient clusterClient) =>
         {
-            var managementGrain = grainFactory.GetGrain<IManagementGrain>(0);
+            var managementGrain = clusterClient.GetGrain<IManagementGrain>(0);
             var statistics = await managementGrain.GetDetailedGrainStatistics();
             var detailedHosts = await managementGrain.GetDetailedHosts();
             var silos = detailedHosts.Select(_ => new SiloInfo(_.SiloName, _.SiloAddress.ToGatewayUri().AbsoluteUri)).Distinct();
@@ -25,9 +25,9 @@ public static class SystemEndpointExtensions
         /// <summary>
         /// Get high-level details about the Orleans silos.
         /// </summary>
-        app.MapGet("/system/silos", async ([FromServices] IGrainFactory grainFactory) =>
+        app.MapGet("/system/silos", async ([FromServices] IClusterClient clusterClient) =>
         {
-            var managementGrain = grainFactory.GetGrain<IManagementGrain>(0);
+            var managementGrain = clusterClient.GetGrain<IManagementGrain>(0);
             var statistics = await managementGrain.GetDetailedGrainStatistics();
             var detailedHosts = await managementGrain.GetDetailedHosts();
             var silos = detailedHosts

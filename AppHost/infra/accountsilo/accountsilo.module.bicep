@@ -1,13 +1,15 @@
 @description('The location for the resource(s) to be deployed.')
 param location string = resourceGroup().location
 
-param scaler_containerport string
+param accountsilo_containerport string
 
 param storage_outputs_tableendpoint string
 
 param orleans_cluster_id_value string
 
 param orleans_service_id_value string
+
+param storage_outputs_blobendpoint string
 
 param outputs_azure_container_registry_managed_identity_id string
 
@@ -17,19 +19,31 @@ param outputs_azure_container_apps_environment_id string
 
 param outputs_azure_container_registry_endpoint string
 
-param scaler_containerimage string
+param accountsilo_containerimage string
 
-resource scaler 'Microsoft.App/containerApps@2024-03-01' = {
-  name: 'scaler'
+param _scaler_bindings_http_url_ string
+
+resource accountsilo 'Microsoft.App/containerApps@2024-03-01' = {
+  name: 'accountsilo'
   location: location
   properties: {
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
         external: false
-        targetPort: scaler_containerport
-        transport: 'http2'
+        targetPort: accountsilo_containerport
+        transport: 'http'
         allowInsecure: true
+        additionalPortMappings: [
+          {
+            external: false
+            targetPort: 8000
+          }
+          {
+            external: false
+            targetPort: 8001
+          }
+        ]
       }
       registries: [
         {
@@ -42,8 +56,8 @@ resource scaler 'Microsoft.App/containerApps@2024-03-01' = {
     template: {
       containers: [
         {
-          image: scaler_containerimage
-          name: 'scaler'
+          image: accountsilo_containerimage
+          name: 'accountsilo'
           env: [
             {
               name: 'OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES'
@@ -63,7 +77,7 @@ resource scaler 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               name: 'HTTP_PORTS'
-              value: scaler_containerport
+              value: accountsilo_containerport
             }
             {
               name: 'Orleans__Clustering__ProviderType'
@@ -90,6 +104,26 @@ resource scaler 'Microsoft.App/containerApps@2024-03-01' = {
               value: 'true'
             }
             {
+              name: 'Orleans__GrainStorage__grainState__ProviderType'
+              value: 'AzureBlobStorage'
+            }
+            {
+              name: 'Orleans__GrainStorage__grainState__ServiceKey'
+              value: 'grainState'
+            }
+            {
+              name: 'ConnectionStrings__grainState'
+              value: storage_outputs_blobendpoint
+            }
+            {
+              name: 'Orleans__Endpoints__SiloPort'
+              value: '8000'
+            }
+            {
+              name: 'Orleans__Endpoints__GatewayPort'
+              value: '8001'
+            }
+            {
               name: 'AZURE_CLIENT_ID'
               value: outputs_managed_identity_client_id
             }
@@ -98,7 +132,21 @@ resource scaler 'Microsoft.App/containerApps@2024-03-01' = {
       ]
       scale: {
         minReplicas: 1
-        maxReplicas: 1
+        maxReplicas: 10
+        rules: [
+          {
+            name: 'orleans'
+            custom: {
+              type: 'external'
+              metadata: {
+                scalerAddress: _scaler_bindings_http_url_
+                upperbound: '200'
+                graintype: 'AccountGrain'
+                siloNameFilter: 'accountsilo'
+              }
+            }
+          }
+        ]
       }
     }
   }

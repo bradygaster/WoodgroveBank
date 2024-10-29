@@ -19,8 +19,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\AccountSilo\AccountSilo.csproj" />
 		<ProjectReference Include="..\Bank\Bank.csproj" />
 		<ProjectReference Include="..\API\API.csproj" />
+		<ProjectReference Include="..\CustomerSilo\CustomerSilo.csproj" />
 		<ProjectReference Include="..\Scaler\Scaler.csproj" />
 		<ProjectReference Include="..\Simulations\Simulations.csproj" />
 	</ItemGroup>

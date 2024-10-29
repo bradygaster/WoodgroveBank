@@ -3,6 +3,7 @@
 public class BankGrain(
         [PersistentState("customers", "grainState")] IPersistentState<List<Customer>> customerIndex,
         [PersistentState("transactions", "grainState")] IPersistentState<List<Transaction>> transactionHistory,
+        [PersistentState("bankSettings", "grainState")] IPersistentState<BankSettings> bankSettings,
         CustomerReceivedStreamHandler customerReceivedStreamHandler,
         TransactionProcessedStreamHandler transactionProcessedStreamHandler,
         ILogger<BankGrain> logger) : Grain, IBankGrain
@@ -39,5 +40,17 @@ public class BankGrain(
 
         transactionHistory.State.Add(transaction);
         await transactionHistory.WriteStateAsync();
+    }
+
+    public async Task<BankSettings> GetSettings()
+    {
+        await bankSettings.ReadStateAsync();
+        return bankSettings.State;
+    }
+
+    public async Task SaveSettings(BankSettings settings)
+    {
+        bankSettings.State = settings;
+        await bankSettings.WriteStateAsync();
     }
 }

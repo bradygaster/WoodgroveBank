@@ -1,7 +1,7 @@
 @description('The location for the resource(s) to be deployed.')
 param location string = resourceGroup().location
 
-param simulations_containerport string
+param customersilo_containerport string
 
 param storage_outputs_tableendpoint string
 
@@ -9,7 +9,7 @@ param orleans_cluster_id_value string
 
 param orleans_service_id_value string
 
-param outputs_azure_container_apps_environment_default_domain string
+param storage_outputs_blobendpoint string
 
 param outputs_azure_container_registry_managed_identity_id string
 
@@ -19,18 +19,31 @@ param outputs_azure_container_apps_environment_id string
 
 param outputs_azure_container_registry_endpoint string
 
-param simulations_containerimage string
+param customersilo_containerimage string
 
-resource simulations 'Microsoft.App/containerApps@2024-03-01' = {
-  name: 'simulations'
+param _scaler_bindings_http_url_ string
+
+resource customersilo 'Microsoft.App/containerApps@2024-03-01' = {
+  name: 'customersilo'
   location: location
   properties: {
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
         external: false
-        targetPort: simulations_containerport
+        targetPort: customersilo_containerport
         transport: 'http'
+        allowInsecure: true
+        additionalPortMappings: [
+          {
+            external: false
+            targetPort: 8000
+          }
+          {
+            external: false
+            targetPort: 8001
+          }
+        ]
       }
       registries: [
         {
@@ -43,8 +56,8 @@ resource simulations 'Microsoft.App/containerApps@2024-03-01' = {
     template: {
       containers: [
         {
-          image: simulations_containerimage
-          name: 'simulations'
+          image: customersilo_containerimage
+          name: 'customersilo'
           env: [
             {
               name: 'OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES'
@@ -64,7 +77,7 @@ resource simulations 'Microsoft.App/containerApps@2024-03-01' = {
             }
             {
               name: 'HTTP_PORTS'
-              value: simulations_containerport
+              value: customersilo_containerport
             }
             {
               name: 'Orleans__Clustering__ProviderType'
@@ -91,20 +104,24 @@ resource simulations 'Microsoft.App/containerApps@2024-03-01' = {
               value: 'true'
             }
             {
-              name: 'services__api__http__0'
-              value: 'http://api.internal.${outputs_azure_container_apps_environment_default_domain}'
+              name: 'Orleans__GrainStorage__grainState__ProviderType'
+              value: 'AzureBlobStorage'
             }
             {
-              name: 'services__api__https__0'
-              value: 'https://api.internal.${outputs_azure_container_apps_environment_default_domain}'
+              name: 'Orleans__GrainStorage__grainState__ServiceKey'
+              value: 'grainState'
             }
             {
-              name: 'services__api__orleans-silo__0'
-              value: 'tcp://api:8000'
+              name: 'ConnectionStrings__grainState'
+              value: storage_outputs_blobendpoint
             }
             {
-              name: 'services__api__orleans-gateway__0'
-              value: 'tcp://api:8001'
+              name: 'Orleans__Endpoints__SiloPort'
+              value: '8000'
+            }
+            {
+              name: 'Orleans__Endpoints__GatewayPort'
+              value: '8001'
             }
             {
               name: 'AZURE_CLIENT_ID'
@@ -115,7 +132,21 @@ resource simulations 'Microsoft.App/containerApps@2024-03-01' = {
       ]
       scale: {
         minReplicas: 1
-        maxReplicas: 1
+        maxReplicas: 10
+        rules: [
+          {
+            name: 'orleans'
+            custom: {
+              type: 'external'
+              metadata: {
+                scalerAddress: _scaler_bindings_http_url_
+                upperbound: '1000'
+                graintype: 'CustomerGrain'
+                siloNameFilter: 'customersilo'
+              }
+            }
+          }
+        ]
       }
     }
   }

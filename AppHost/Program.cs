@@ -40,39 +40,85 @@ var scaler = builder.AddProject<Projects.Scaler>("scaler")
            containerApp.Template.Value!.Scale.Value!.Rules = [];
        });
 
+var customersilo = builder.AddProject<Projects.CustomerSilo>("customersilo")
+       .WithReference(orleans)
+       .WaitFor(bank)
+       .WaitFor(scaler)
+       .PublishAsAzureContainerApp((module, app) =>
+       {
+           var scalerEndpoint = scaler.GetEndpoint("http").AsProvisioningParameter(module);
+           app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
+           app.Template.Value!.Scale.Value!.MinReplicas = 1;
+           app.Template.Value!.Scale.Value!.MaxReplicas = 10;
+           app.Template.Value!.Scale.Value!.Rules = [
+               new ContainerAppScaleRule()
+               {
+                   Name = "orleans",
+                   Custom = new ContainerAppCustomScaleRule()
+                   {
+                       CustomScaleRuleType = "external",
+                       Metadata = {
+                           { "scalerAddress", scalerEndpoint },
+                           { "upperbound", "500" },
+                           { "graintype", "CustomerGrain" },
+                           { "siloNameFilter", "customersilo" }
+                       }
+                   }
+               }
+           ];
+       });
+
+var accountsilo = builder.AddProject<Projects.AccountSilo>("accountsilo")
+       .WithReference(orleans)
+       .WaitFor(bank)
+       .WaitFor(scaler)
+       .PublishAsAzureContainerApp((module, app) =>
+       {
+           var scalerEndpoint = scaler.GetEndpoint("http").AsProvisioningParameter(module);
+
+           app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
+           app.Template.Value!.Scale.Value!.MinReplicas = 1;
+           app.Template.Value!.Scale.Value!.MaxReplicas = 10;
+           app.Template.Value!.Scale.Value!.Rules = [
+               new ContainerAppScaleRule()
+               {
+                   Name = "orleans",
+                   Custom = new ContainerAppCustomScaleRule()
+                   {
+                       CustomScaleRuleType = "external",
+                       Metadata = {
+                           { "scalerAddress", scalerEndpoint },
+                           { "upperbound", "200" },
+                           { "graintype", "AccountGrain" },
+                           { "siloNameFilter", "accountsilo" }
+                       }
+                   }
+               }
+           ];
+       });
+
 var api = builder.AddProject<Projects.API>("api")
-                 .WithReference(orleans)
+                 .WithReference(orleans.AsClient())
                  .WaitFor(bank)
                  .WaitFor(scaler)
+                 .WaitFor(accountsilo)
+                 .WaitFor(customersilo)
                  .PublishAsAzureContainerApp((module, app) =>
                  {
                      var scalerEndpoint = scaler.GetEndpoint("http").AsProvisioningParameter(module);
 
                      app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
                      app.Template.Value!.Scale.Value!.MinReplicas = 1;
-                     app.Template.Value!.Scale.Value!.MaxReplicas = 10;
-                     app.Template.Value!.Scale.Value!.Rules = [
-                       new ContainerAppScaleRule()
-                       {
-                           Name = "orleans",
-                           Custom = new ContainerAppCustomScaleRule()
-                           {
-                               CustomScaleRuleType = "external",
-                               Metadata = {
-                                   { "scalerAddress", scalerEndpoint },
-                                   { "upperbound", "100" },
-                                   { "graintype", "CustomerGrain" },
-                                   { "siloNameFilter", "api" }
-                               }
-                           }
-                       }
-                    ];
+                     app.Template.Value!.Scale.Value!.MaxReplicas = 1;
+                     app.Template.Value!.Scale.Value!.Rules = [];
                  });
 
 builder.AddProject<Projects.Simulations>("simulations")
        .WithReference(orleans.AsClient())
        .WithReference(api)
        .WaitFor(api)
+       .WaitFor(accountsilo)
+       .WaitFor(customersilo)
        .PublishAsAzureContainerApp((module, containerApp) =>
        {
            containerApp.Template.Value!.Scale.Value!.MaxReplicas = 1;

@@ -1,6 +1,6 @@
 ﻿using Orleans.Concurrency;
 
-namespace API.Grains;
+namespace WoodgroveBank.Grains;
 
 [Reentrant]
 [CollectionAgeLimit(Minutes = 2)]
@@ -16,6 +16,14 @@ public class AccountGrain : Grain, IAccountGrain
 
     private IPersistentState<Account> _accountState { get; set; }
     private IPersistentState<List<Transaction>> _transactionListState { get; set; }
+
+    public Task<decimal> GetBalance() => Task.FromResult(_accountState.State.Balance);
+
+    public async Task<Transaction[]> GetTransactions()
+    {
+        await _transactionListState.ReadStateAsync();
+        return _transactionListState.State.ToArray();
+    }
 
     public async Task<Account> SaveAccount(Account account)
     {
@@ -67,8 +75,7 @@ public class AccountGrain : Grain, IAccountGrain
 
         if (transaction.TransactionType == TransactionType.Withdrawal)
         {
-            decimal withdrawalFee = (decimal)2.5;
-            transaction.PotentialResultingAccountBalance = transaction.InitialAccountBalance - (transaction.TransactionAmount + withdrawalFee);
+            transaction.PotentialResultingAccountBalance = transaction.InitialAccountBalance - transaction.TransactionAmount;
 
             if (transaction.PotentialResultingAccountBalance > 0)
             {
@@ -87,11 +94,14 @@ public class AccountGrain : Grain, IAccountGrain
             }
         }
 
-        // each time they overdraft charge them 1% and flag the account
+        // each time they overdraft charge them $1
         if (transaction.TransactionType == TransactionType.OverdraftPenalty)
         {
+            // charge the customer $1 for overdrafting
+            transaction.ResultingAccountBalance = transaction.ResultingAccountBalance - 1;
+
+            // allow the mutated transaction to be saved
             transaction.TransactionAllowed = true;
-            _accountState.State.Balance = transaction.InitialAccountBalance * (decimal).99;
         }
 
         transaction.Timestamp = DateTime.Now;
@@ -106,12 +116,4 @@ public class AccountGrain : Grain, IAccountGrain
 
         return transaction.TransactionAllowed && transaction.ResultingAccountBalance > 0;
     }
-
-    public async Task<Transaction[]> GetTransactions()
-    {
-        await _accountState.ReadStateAsync();
-        return _transactionListState.State.ToArray();
-    }
-
-    public Task<decimal> GetBalance() => Task.FromResult(_accountState.State.Balance);
 }

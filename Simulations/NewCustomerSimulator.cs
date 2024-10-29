@@ -1,28 +1,33 @@
 ﻿using Bogus;
+using WoodgroveBank.Abstractions;
 
 namespace Simulations;
 
-public class NewCustomerSimulator(WoodgroveBankApiClient woodgroveBankApiClient) : BackgroundService
+public class NewCustomerSimulator(ILogger<NewCustomerSimulator> logger, IClusterClient clusterClient) : BackgroundService
 {
+    private BankSettings _bankSettings = new();
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            Task.Delay(300);
-            var customerId = Guid.NewGuid();
-            var faker = new Faker<Customer>()
-                .RuleFor(p => p.Id, f => customerId)
-                .RuleFor(p => p.Name, f => f.Name.FullName())
-                .RuleFor(p => p.Country, f => f.Address.Country())
-                .RuleFor(p => p.City, f => $"{f.Address.City()}, {f.Address.State()}")
-                .RuleFor(p => p.Pin, new Random().Next(1000, 9999).ToString());
-
             try
             {
+                _bankSettings = await clusterClient.GetGrain<IBankGrain>(Guid.Empty).GetSettings();
+
+                var customerId = Guid.NewGuid();
+                var faker = new Faker<Customer>()
+                    .RuleFor(p => p.Id, f => customerId)
+                    .RuleFor(p => p.Name, f => f.Name.FullName())
+                    .RuleFor(p => p.Country, f => f.Address.Country())
+                    .RuleFor(p => p.City, f => $"{f.Address.City()}, {f.Address.State()}")
+                    .RuleFor(p => p.Pin, new Random().Next(1000, 9999).ToString());
+
                 var fakeCustomer = faker.Generate();
 
-                Console.WriteLine($"Creating customer {fakeCustomer.Name} in {fakeCustomer.City} in {fakeCustomer.Country}");
-                await woodgroveBankApiClient.CreateCustomer(fakeCustomer);
+                logger.LogInformation($"Creating customer {fakeCustomer.Name} in {fakeCustomer.City} in {fakeCustomer.Country}");
+                await clusterClient.GetGrain<ICustomerGrain>(customerId).SaveCustomer(fakeCustomer);
+                await clusterClient.GetGrain<IBankGrain>(Guid.Empty).UpdateCustomerIndex(fakeCustomer);
 
                 var checking = new Account
                 {
@@ -46,18 +51,18 @@ public class NewCustomerSimulator(WoodgroveBankApiClient woodgroveBankApiClient)
                     Id = Guid.NewGuid()
                 };
 
-                Console.WriteLine($"Creating account {checking.Name} for customer {fakeCustomer.Name} with a balance of {checking.Balance}.");
-                woodgroveBankApiClient.CreateAccount(checking);
+                logger.LogInformation($"Creating account {checking.Name} for customer {fakeCustomer.Name} with a balance of {checking.Balance}.");
+                await clusterClient.GetGrain<ICustomerGrain>(customerId).OpenAccount(checking);
 
-                Console.WriteLine($"Creating account {savings.Name} for customer {fakeCustomer.Name} with a balance of {savings.Balance}.");
-                woodgroveBankApiClient.CreateAccount(savings);
+                logger.LogInformation($"Creating account {savings.Name} for customer {fakeCustomer.Name} with a balance of {savings.Balance}.");
+                await clusterClient.GetGrain<ICustomerGrain>(customerId).OpenAccount(savings);
             }
             catch
             {
                 // just keep going
             }
 
-            await Task.Delay(Random.Shared.Next(500, 2000), stoppingToken);
+            await Task.Delay(Random.Shared.Next(0, _bankSettings.MaximumDurationBetweenNewCustomers), stoppingToken);
         }
     }
 }

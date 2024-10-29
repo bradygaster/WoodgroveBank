@@ -1,13 +1,7 @@
-﻿public class TransactionSimulator : BackgroundService
+﻿public class TransactionSimulator(ILogger<TransactionSimulator> logger, IClusterClient clusterClient) : BackgroundService
 {
-    private readonly ILogger<TransactionSimulator> _logger;
-    private IClusterClient _clusterClient;
-
-    public TransactionSimulator(ILogger<TransactionSimulator> logger, IClusterClient clusterClient)
-    {
-        _logger = logger;
-        _clusterClient = clusterClient;
-    }
+    private BankSettings _bankSettings = new();
+    private Customer[] _customers = Array.Empty<Customer>();
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -15,39 +9,39 @@
         {
             try
             {
-                var bank = _clusterClient.GetGrain<IBankGrain>(Guid.Empty);
-                var customers = await bank.GetCustomers();
+                _bankSettings = await clusterClient.GetGrain<IBankGrain>(Guid.Empty).GetSettings();
+                _customers = await clusterClient.GetGrain<IBankGrain>(Guid.Empty).GetCustomers();
 
-                if (customers.Length > 0)
+                if (_customers.Length > 0)
                 {
-                    var randomCustomer = customers[Random.Shared.Next(0, customers.Length)];
-                    var customer = _clusterClient.GetGrain<ICustomerGrain>(randomCustomer.Id);
+                    var randomCustomer = _customers[Random.Shared.Next(0, _customers.Length)];
+                    var customer = clusterClient.GetGrain<ICustomerGrain>(randomCustomer.Id);
                     var accounts = await customer.GetAccounts();
 
                     if (accounts.Length > 0)
                     {
                         var account = accounts[Random.Shared.Next(0, accounts.Length)];
-                        var accountGrain = _clusterClient.GetGrain<IAccountGrain>(account.Id);
+                        var accountGrain = clusterClient.GetGrain<IAccountGrain>(account.Id);
                         var balance = await accountGrain.GetBalance();
                         var amount = Random.Shared.Next(0, (int)account.Balance + 10);
                         var result = await accountGrain.Withdraw(amount);
 
                         if (result == false)
                         {
-                            _logger.LogWarning($"Withdrawal of {amount} from account {account.Id} failed");
+                            logger.LogWarning($"Withdrawal of {amount} from account {account.Id} failed");
 
                             amount = Random.Shared.Next(100, 1000);
 
-                            _logger.LogWarning($"Depositing {amount} into account {account.Id}");
+                            logger.LogWarning($"Depositing {amount} into account {account.Id}");
                             var depositResult = await accountGrain.Deposit(amount);
                             if (depositResult)
                             {
-                                _logger.LogWarning($"Deposited {amount} into account {account.Id}");
+                                logger.LogWarning($"Deposited {amount} into account {account.Id}");
                             }
                         }
                         else
                         {
-                            _logger.LogInformation($"Withdrawal of {amount} from account {account.Id} succeeded");
+                            logger.LogInformation($"Withdrawal of {amount} from account {account.Id} succeeded");
                         }
                     }
                 }
@@ -57,7 +51,7 @@
                 // API or Bank silos aren't active yet
             }
 
-            await Task.Delay(Random.Shared.Next(100, 500), stoppingToken);
+            await Task.Delay(Random.Shared.Next(0, _bankSettings.MaximumDurationBetweenNewTransactions), stoppingToken);
         }
     }
 }

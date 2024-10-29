@@ -7,11 +7,11 @@ public static class AccountEndpointExtensions
         /// <summary>
         /// Create a new account for a customer.
         /// </summary>
-        app.MapPost("/accounts", async (IGrainFactory grainFactory, Account account) =>
+        app.MapPost("/accounts", async (IClusterClient clusterClient, Account account) =>
         {
             try
             {
-                var customerGrain = grainFactory.GetGrain<ICustomerGrain>(account.CustomerId);
+                var customerGrain = clusterClient.GetGrain<ICustomerGrain>(account.CustomerId);
                 account = await customerGrain.OpenAccount(account);
                 return Results.Created($"/accounts/{account.Id}", account);
             }
@@ -29,9 +29,9 @@ public static class AccountEndpointExtensions
         /// Submits a deposit to a customer account.
         /// </summary>
         app.MapPost("/accounts/{accountId}/deposit/",
-            async (IGrainFactory grainFactory, Guid accountId, decimal amount) =>
+            async (IClusterClient clusterClient, Guid accountId, decimal amount) =>
             {
-                var result = await grainFactory.GetGrain<IAccountGrain>(accountId).Deposit(amount);
+                var result = await clusterClient.GetGrain<IAccountGrain>(accountId).Deposit(amount);
                 if (result) return Results.Ok();
                 return Results.Unauthorized();
             })
@@ -44,9 +44,9 @@ public static class AccountEndpointExtensions
         /// Submits a withdrawal to a customer account.
         /// </summary>
         app.MapPost("/accounts/{accountId}/withdraw",
-            async (IGrainFactory grainFactory, Guid accountId, decimal amount) =>
+            async (IClusterClient clusterClient, Guid accountId, decimal amount) =>
             {
-                var result = await grainFactory.GetGrain<IAccountGrain>(accountId).Withdraw(amount);
+                var result = await clusterClient.GetGrain<IAccountGrain>(accountId).Withdraw(amount);
                 if (result) return Results.Ok();
                 return Results.Unauthorized();
             })
@@ -58,9 +58,9 @@ public static class AccountEndpointExtensions
         /// <summary>
         /// Gets all of a customer's transactions for an account.
         /// </summary>
-        app.MapGet("/accounts/{accountId}/transactions", async (IGrainFactory grainFactory, Guid accountId) =>
+        app.MapGet("/accounts/{accountId}/transactions", async (IClusterClient clusterClient, Guid accountId) =>
         {
-            var result = await grainFactory.GetGrain<IAccountGrain>(accountId).GetTransactions();
+            var result = await clusterClient.GetGrain<IAccountGrain>(accountId).GetTransactions();
             return Results.Ok(result);
         })
         .WithTags("Accounts")
