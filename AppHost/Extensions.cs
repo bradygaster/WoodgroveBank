@@ -23,4 +23,21 @@ public static class Extensions
 
         return parameter;
     }
+
+    public static ProvisioningParameter AsProvisioningParameter(this ReferenceExpression expression, AzureResourceInfrastructure infrastructure, string parameterName)
+    {
+        ArgumentNullException.ThrowIfNull(expression);
+        ArgumentNullException.ThrowIfNull(infrastructure);
+
+        infrastructure.AspireResource.Parameters[parameterName] = expression;
+
+        var parameter = infrastructure.GetResources().OfType<ProvisioningParameter>().FirstOrDefault(p => p.IdentifierName == parameterName);
+        if (parameter is null)
+        {
+            parameter = new ProvisioningParameter(parameterName, typeof(string));
+            infrastructure.Add(parameter);
+        }
+
+        return parameter;
+    }
 }

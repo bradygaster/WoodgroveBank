@@ -46,7 +46,11 @@ var customersilo = builder.AddProject<Projects.CustomerSilo>("customersilo")
        .WaitFor(scaler)
        .PublishAsAzureContainerApp((module, app) =>
        {
-           var scalerEndpoint = scaler.GetEndpoint("http").AsProvisioningParameter(module);
+           var endpoint = scaler.GetEndpoint("http");
+           var scalerEndpoint = ReferenceExpression
+                                .Create($"{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}")
+                                .AsProvisioningParameter(module, "scalerEndpoint");
+
            app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
            app.Template.Value!.Scale.Value!.MinReplicas = 1;
            app.Template.Value!.Scale.Value!.MaxReplicas = 10;
@@ -74,7 +78,10 @@ var accountsilo = builder.AddProject<Projects.AccountSilo>("accountsilo")
        .WaitFor(scaler)
        .PublishAsAzureContainerApp((module, app) =>
        {
-           var scalerEndpoint = scaler.GetEndpoint("http").AsProvisioningParameter(module);
+           var endpoint = scaler.GetEndpoint("http");
+           var scalerEndpoint = ReferenceExpression
+                                .Create($"{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}")
+                                .AsProvisioningParameter(module, "scalerEndpoint");
 
            app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
            app.Template.Value!.Scale.Value!.MinReplicas = 1;
@@ -88,7 +95,7 @@ var accountsilo = builder.AddProject<Projects.AccountSilo>("accountsilo")
                        CustomScaleRuleType = "external",
                        Metadata = {
                            { "scalerAddress", scalerEndpoint },
-                           { "upperbound", "200" },
+                           { "upperbound", "500" },
                            { "graintype", "AccountGrain" },
                            { "siloNameFilter", "accountsilo" }
                        }
@@ -98,19 +105,37 @@ var accountsilo = builder.AddProject<Projects.AccountSilo>("accountsilo")
        });
 
 var api = builder.AddProject<Projects.API>("api")
-                 .WithReference(orleans.AsClient())
+                 .WithReference(orleans)
                  .WaitFor(bank)
                  .WaitFor(scaler)
                  .WaitFor(accountsilo)
                  .WaitFor(customersilo)
                  .PublishAsAzureContainerApp((module, app) =>
                  {
-                     var scalerEndpoint = scaler.GetEndpoint("http").AsProvisioningParameter(module);
+                     var endpoint = scaler.GetEndpoint("http");
+                     var scalerEndpoint = ReferenceExpression
+                                          .Create($"{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}")
+                                          .AsProvisioningParameter(module, "scalerEndpoint");
 
                      app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
                      app.Template.Value!.Scale.Value!.MinReplicas = 1;
-                     app.Template.Value!.Scale.Value!.MaxReplicas = 1;
-                     app.Template.Value!.Scale.Value!.Rules = [];
+                     app.Template.Value!.Scale.Value!.MaxReplicas = 10;
+                     app.Template.Value!.Scale.Value!.Rules = [
+                        new ContainerAppScaleRule()
+                        {
+                            Name = "orleans",
+                            Custom = new ContainerAppCustomScaleRule()
+                            {
+                                CustomScaleRuleType = "external",
+                                Metadata = {
+                                    { "scalerAddress", scalerEndpoint },
+                                    { "upperbound", "100" },
+                                    { "graintype", "CustomerGrain" },
+                                    { "siloNameFilter", "api" }
+                                }
+                            }
+                        }
+                    ];
                  });
 
 builder.AddProject<Projects.Simulations>("simulations")

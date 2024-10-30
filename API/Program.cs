@@ -1,7 +1,13 @@
+using Orleans.Configuration;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-builder.AsOrleansClient();
+builder.AsOrleansSilo(silo =>
+{
+    silo.Configure<SiloOptions>(options =>
+        options.SiloName = $"api_{Path.GetFileNameWithoutExtension(Path.GetRandomFileName())}");
+});
 
 builder.Services.AddOpenApi("WoodgroveApi");
 
