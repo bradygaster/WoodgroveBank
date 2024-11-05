@@ -1,7 +1,7 @@
 ﻿namespace WoodgroveBank.Abstractions
 {
     [GenerateSerializer]
-    public class Transaction
+    public class AccountTransaction
     {
         [Id(0)]
         public Guid AccountId { get; set; }
@@ -21,6 +21,8 @@
         public bool TransactionAllowed { get; set; } = false;
         [Id(8)]
         public DateTime Timestamp { get; set; } = DateTime.Now;
+        [Id(9)]
+        public Guid TransactionId { get; set; }
     }
 
     public enum TransactionType

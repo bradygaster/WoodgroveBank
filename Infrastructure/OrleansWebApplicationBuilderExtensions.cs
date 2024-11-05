@@ -1,4 +1,6 @@
-﻿namespace Microsoft.AspNetCore.Builder
+﻿using Orleans.Configuration;
+
+namespace Microsoft.AspNetCore.Builder
 {
     public static class OrleansWebApplicationBuilderExtensions
     {
@@ -9,7 +11,13 @@
             builder.AddKeyedAzureBlobClient("grainState");
             builder.UseOrleans(silo =>
             {
-                if(siloBuilderCallback is not null)
+                silo.Configure<ClusterMembershipOptions>(o =>
+                {
+                    o.IAmAliveTablePublishTimeout = TimeSpan.FromSeconds(30);
+                    o.NumMissedTableIAmAliveLimit = 4;
+                });
+
+                if (siloBuilderCallback is not null)
                 {
                     siloBuilderCallback(silo);
                 }
@@ -21,7 +29,13 @@
         public static WebApplicationBuilder AsOrleansClient(this WebApplicationBuilder builder)
         {
             builder.AddKeyedAzureTableClient("clustering");
-            builder.UseOrleansClient();
+            builder.UseOrleansClient(client =>
+            {
+                client.Configure<GatewayOptions>(o =>
+                {
+                    o.GatewayListRefreshPeriod = TimeSpan.FromSeconds(30);
+                });
+            });
 
             return builder;
         }

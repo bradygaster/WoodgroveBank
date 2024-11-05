@@ -40,6 +40,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomerSilo", "CustomerSil
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccountSilo", "AccountSilo\AccountSilo.csproj", "{4E948951-CF5C-BDD1-8BD4-95D6536E1E6B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransactionSilo", "TransactionSilo\TransactionSilo.csproj", "{D2827153-0CE2-2A61-076D-49385702571D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +92,10 @@ Global
 		{4E948951-CF5C-BDD1-8BD4-95D6536E1E6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E948951-CF5C-BDD1-8BD4-95D6536E1E6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E948951-CF5C-BDD1-8BD4-95D6536E1E6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2827153-0CE2-2A61-076D-49385702571D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2827153-0CE2-2A61-076D-49385702571D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2827153-0CE2-2A61-076D-49385702571D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2827153-0CE2-2A61-076D-49385702571D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -106,6 +112,7 @@ Global
 		{EC9651EF-D1E4-4A18-9D7C-6D47372B7F96} = {8C458DA8-4369-4186-8D97-5EA184D8A9BE}
 		{71FB3436-57D7-ACB5-0C01-D4ACD2D42EC8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{4E948951-CF5C-BDD1-8BD4-95D6536E1E6B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{D2827153-0CE2-2A61-076D-49385702571D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0F294DB6-AA0D-4B66-BCFC-DEE836E0099A}

@@ -65,7 +65,7 @@ public static class AccountEndpointExtensions
         })
         .WithTags("Accounts")
         .WithName("GetTransactions")
-        .Produces<List<Transaction>>();
+        .Produces<List<AccountTransaction>>();
 
         return app;
     }

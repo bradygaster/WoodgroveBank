@@ -13,6 +13,6 @@ public class TransactionProcessedStreamHandler
 
 public class TransactionProcessedEventArgs : EventArgs
 {
-    public required Transaction Transaction { get; set; }
+    public required AccountTransaction Transaction { get; set; }
     public required Customer Customer { get; set; }
 }

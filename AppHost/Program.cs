@@ -40,6 +40,38 @@ var scaler = builder.AddProject<Projects.Scaler>("scaler")
            containerApp.Template.Value!.Scale.Value!.Rules = [];
        });
 
+var transactionsilo = builder.AddProject<Projects.TransactionSilo>("transactionsilo")
+                 .WithReference(orleans)
+                 .WaitFor(bank)
+                 .WaitFor(scaler)
+                 .PublishAsAzureContainerApp((module, app) =>
+                 {
+                     var endpoint = scaler.GetEndpoint("http");
+                     var scalerEndpoint = ReferenceExpression
+                                          .Create($"{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}")
+                                          .AsProvisioningParameter(module, "scalerEndpoint");
+
+                     app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
+                     app.Template.Value!.Scale.Value!.MinReplicas = 1;
+                     app.Template.Value!.Scale.Value!.MaxReplicas = 10;
+                     app.Template.Value!.Scale.Value!.Rules = [
+                        new ContainerAppScaleRule()
+                        {
+                            Name = "orleans",
+                            Custom = new ContainerAppCustomScaleRule()
+                            {
+                                CustomScaleRuleType = "external",
+                                Metadata = {
+                                    { "scalerAddress", scalerEndpoint },
+                                    { "upperbound", "500" },
+                                    { "graintype", "TransactionGrain" },
+                                    { "siloNameFilter", "transactions" }
+                                }
+                            }
+                        }
+                    ];
+                 });
+
 var customersilo = builder.AddProject<Projects.CustomerSilo>("customersilo")
        .WithReference(orleans)
        .WaitFor(bank)
@@ -63,7 +95,7 @@ var customersilo = builder.AddProject<Projects.CustomerSilo>("customersilo")
                        CustomScaleRuleType = "external",
                        Metadata = {
                            { "scalerAddress", scalerEndpoint },
-                           { "upperbound", "500" },
+                           { "upperbound", "200" },
                            { "graintype", "CustomerGrain" },
                            { "siloNameFilter", "customersilo" }
                        }
@@ -76,6 +108,7 @@ var accountsilo = builder.AddProject<Projects.AccountSilo>("accountsilo")
        .WithReference(orleans)
        .WaitFor(bank)
        .WaitFor(scaler)
+       .WaitFor(transactionsilo)
        .PublishAsAzureContainerApp((module, app) =>
        {
            var endpoint = scaler.GetEndpoint("http");
@@ -110,6 +143,7 @@ var api = builder.AddProject<Projects.API>("api")
                  .WaitFor(scaler)
                  .WaitFor(accountsilo)
                  .WaitFor(customersilo)
+                 .WaitFor(transactionsilo)
                  .PublishAsAzureContainerApp((module, app) =>
                  {
                      var endpoint = scaler.GetEndpoint("http");
@@ -144,6 +178,7 @@ builder.AddProject<Projects.Simulations>("simulations")
        .WaitFor(api)
        .WaitFor(accountsilo)
        .WaitFor(customersilo)
+       .WaitFor(transactionsilo)
        .PublishAsAzureContainerApp((module, containerApp) =>
        {
            containerApp.Template.Value!.Scale.Value!.MaxReplicas = 1;

@@ -2,7 +2,7 @@
 
 public class BankGrain(
         [PersistentState("customers", "grainState")] IPersistentState<List<Customer>> customerIndex,
-        [PersistentState("transactions", "grainState")] IPersistentState<List<Transaction>> transactionHistory,
+        [PersistentState("transactions", "grainState")] IPersistentState<List<AccountTransaction>> transactionHistory,
         [PersistentState("bankSettings", "grainState")] IPersistentState<BankSettings> bankSettings,
         CustomerReceivedStreamHandler customerReceivedStreamHandler,
         TransactionProcessedStreamHandler transactionProcessedStreamHandler,
@@ -25,12 +25,12 @@ public class BankGrain(
         customerReceivedStreamHandler.OnCustomerReceived(customer);
     }
 
-    public Task<Transaction[]> GetRecentTransactions()
+    public Task<AccountTransaction[]> GetRecentTransactions()
     {
         return Task.FromResult(transactionHistory.State.OrderByDescending(x => x.Timestamp).Take(10).ToArray());
     }
 
-    public async Task LogTransaction(Transaction transaction)
+    public async Task LogTransaction(AccountTransaction transaction)
     {
         transactionProcessedStreamHandler.OnTransactionReceived(new TransactionProcessedEventArgs
         {

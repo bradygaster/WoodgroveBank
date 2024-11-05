@@ -22,8 +22,8 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0-rc.2.24473.5" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0-rc.2.24473.5" />
 		<PackageReference Include="Microsoft.Orleans.Streaming" Version="8.2.0" />
-		<PackageReference Include="Aspire.Azure.Data.Tables" Version="9.0.0-rc.2.24516.6" />
-		<PackageReference Include="Aspire.Azure.Storage.Blobs" Version="9.0.0-rc.2.24516.6" />
+		<PackageReference Include="Aspire.Azure.Data.Tables" Version="9.0.0-rc.1.24511.1" />
+		<PackageReference Include="Aspire.Azure.Storage.Blobs" Version="9.0.0-rc.1.24511.1" />
 	</ItemGroup>
 
 </Project>

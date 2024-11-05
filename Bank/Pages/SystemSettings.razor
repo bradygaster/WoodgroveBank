@@ -1,34 +1,87 @@
 ﻿@page "/system"
 @inject IGrainFactory grainFactory
+@implements IDisposable
 
 <h3>Settings</h3>
 
-<div class="row" style="min-height: 10px;">
-    Maximum delay (in ms) between new Customer creations: @settings.MaximumDurationBetweenNewCustomers
+<p>Use these sliders to control the duration between customer and transaction simulations. Higher is slower.</p>
+
+<div class="row">
+    <div class="col" style="min-height: 10px;">
+        Maximum delay (in ms) between new Customer creations: @settings.MaximumDurationBetweenNewCustomers
+    </div>
+    <div class="col" style="min-height: 10px;">
+        Maximum delay (in ms) between new Transaction creations: @settings.MaximumDurationBetweenNewTransactions
+    </div>
 </div>
 
-<div class="row" style="min-height: 10px;">
-    <input type="range" min="1" max="10000" value="@settings.MaximumDurationBetweenNewCustomers" @oninput="OnCustomerSliderChange" />
+<div class="row">
+    <div class="col" style="min-height: 10px;">
+        <input type="range" min="1" max="10000" value="@settings.MaximumDurationBetweenNewCustomers" @oninput="OnCustomerSliderChange" />
+    </div>
+    <div class="col" style="min-height: 10px;">
+        <input type="range" min="1" max="10000" value="@settings.MaximumDurationBetweenNewTransactions" @oninput="OnTransactionSliderChange" />
+    </div>
 </div>
 
-<div class="row" style="min-height: 10px; margin-top:40px;">
-    Maximum delay (in ms) between new Transaction creations: @settings.MaximumDurationBetweenNewTransactions
-</div>
+<h3 style="margin-top: 20px;">Topology</h3>
 
-<div class="row" style="min-height: 10px;">
-    <input type="range" min="1" max="10000" value="@settings.MaximumDurationBetweenNewTransactions" @oninput="OnTransactionSliderChange" />
-</div>
+<p>Here you'll see information on the servers and grains running in the app.</p>
+
+@if (hosts is not null && stats is not null)
+{
+    <table class="table">
+        <tr>
+            <th>Role</th>
+            <th>Host</th>
+            <th>Started</th>
+            <th>Status</th>
+            <th>Customer Grains</th>
+            <th>Account Grains</th>
+            <th>Transaction Grains</th>
+        </tr>
+        @foreach (var host in hosts.Where(_ => _.Status != SiloStatus.Dead).OrderBy(_ => _.RoleName))
+        {
+            <tr>
+                <td>@host.RoleName</td>
+                <td>@host.HostName</td>
+                <td>@host.StartTime</td>
+                <td>@host.Status</td>
+                <td>@stats.Count(_ => _.GrainType.Contains("Customer") && _.SiloAddress == host.SiloAddress)</td>
+                <td>@stats.Count(_ => _.GrainType.Contains("Account") && _.SiloAddress == host.SiloAddress)</td>
+                <td>@stats.Count(_ => _.GrainType.Contains("Transaction") && _.SiloAddress == host.SiloAddress)</td>
+            </tr>
+        }
+    </table>
+}
 
 @code {
     private BankSettings settings = new();
     private bool shouldRender = false;
+    private IEnumerable<MembershipEntry> hosts;
+    private IEnumerable<DetailedGrainStatistic> stats;
+    private Timer? reloadTimer;
 
     protected override bool ShouldRender() => shouldRender;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadSettings();
+        await ReloadStatistics();
+
         shouldRender = true;
+
+        // Set up a timer to call ReloadStatistics every 30 seconds (30000 ms)
+        reloadTimer = new Timer(async _ => await ReloadStatistics(), null, TimeSpan.Zero, TimeSpan.FromSeconds(3));
+    }
+
+    private async Task ReloadStatistics()
+    {
+        var managementGrain = grainFactory.GetGrain<IManagementGrain>(0);
+        hosts = await managementGrain.GetDetailedHosts();
+        stats = (await managementGrain.GetDetailedGrainStatistics()).Where(_ => _.GrainType.Contains("Woodgrove")).OrderBy(_ => _.GrainType);
+        shouldRender = true;
+        await InvokeAsync(StateHasChanged); // Schedule UI update
     }
 
     private async Task SaveSettings()
@@ -50,4 +103,10 @@
     }
 
     private async Task LoadSettings() => settings = await grainFactory.GetGrain<IBankGrain>(Guid.Empty).GetSettings();
+
+    public void Dispose()
+    {
+        // Dispose of the timer when the component is disposed
+        reloadTimer?.Dispose();
+    }
 }

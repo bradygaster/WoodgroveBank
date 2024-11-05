@@ -5,115 +5,59 @@ namespace WoodgroveBank.Grains;
 [Reentrant]
 [CollectionAgeLimit(Minutes = 2)]
 
-public class AccountGrain : Grain, IAccountGrain
+public class AccountGrain([PersistentState("account", "grainState")] IPersistentState<Account> accountState,
+        [PersistentState("transactions", "grainState")] IPersistentState<List<AccountTransaction>> transactionListState) : Grain, IAccountGrain
 {
-    public AccountGrain([PersistentState("account", "grainState")] IPersistentState<Account> accountState,
-        [PersistentState("transactions", "grainState")] IPersistentState<List<Transaction>> transactionListState)
+    public Task<decimal> GetBalance() => Task.FromResult(accountState.State.Balance);
+
+    public async Task<AccountTransaction[]> GetTransactions()
     {
-        _accountState = accountState;
-        _transactionListState = transactionListState;
-    }
-
-    private IPersistentState<Account> _accountState { get; set; }
-    private IPersistentState<List<Transaction>> _transactionListState { get; set; }
-
-    public Task<decimal> GetBalance() => Task.FromResult(_accountState.State.Balance);
-
-    public async Task<Transaction[]> GetTransactions()
-    {
-        await _transactionListState.ReadStateAsync();
-        return _transactionListState.State.ToArray();
+        await transactionListState.ReadStateAsync();
+        return transactionListState.State.ToArray();
     }
 
     public async Task<Account> SaveAccount(Account account)
     {
-        _accountState.State = account;
-        await _accountState.WriteStateAsync();
-        return _accountState.State;
+        accountState.State = account;
+        await accountState.WriteStateAsync();
+        return accountState.State;
     }
 
     public async Task<bool> Deposit(decimal amount)
-    {
-        return await SubmitTransation(TransactionType.Deposit, amount);
-    }
+        => await SubmitTransaction(TransactionType.Deposit, amount);
 
     public async Task<bool> Withdraw(decimal amount)
-    {
-        return await SubmitTransation(TransactionType.Withdrawal, amount);
-    }
+        => await SubmitTransaction(TransactionType.Withdrawal, amount);
 
-    private async Task<bool> SubmitTransation(TransactionType type, decimal amount)
+    private async Task<bool> SubmitTransaction(TransactionType type, decimal amount)
     {
-        var transaction = new Transaction
+        var transaction = new AccountTransaction
         {
             AccountId = this.GetGrainId().GetGuidKey(),
-            CustomerId = _accountState.State.CustomerId,
-            InitialAccountBalance = _accountState.State.Balance,
+            CustomerId = accountState.State.CustomerId,
+            InitialAccountBalance = accountState.State.Balance,
             Timestamp = DateTime.Now,
             TransactionType = type,
-            TransactionAmount = amount
+            TransactionAmount = amount,
+            TransactionId = Guid.NewGuid()
         };
 
-        transaction.TransactionAllowed = await SubmitTransaction(transaction);
-        return transaction.TransactionAllowed;
-    }
+        var transactionGrain = GrainFactory.GetGrain<IAccountTransactionGrain>(transaction.TransactionId);
+        await transactionGrain.SetTransaction(transaction);
+        await transactionGrain.Process();
 
-    private async Task<bool> SubmitTransaction(Transaction transaction)
-    {
-        await _accountState.ReadStateAsync();
-
-        transaction.InitialAccountBalance = _accountState.State.Balance;
-
-        if (transaction.TransactionType == TransactionType.Deposit)
-        {
-            transaction.PotentialResultingAccountBalance = transaction.InitialAccountBalance + transaction.TransactionAmount;
-            transaction.ResultingAccountBalance = transaction.InitialAccountBalance + transaction.TransactionAmount;
-            transaction.TransactionAllowed = true;
-            _transactionListState.State.Add(transaction);
-            _accountState.State.Balance = transaction.ResultingAccountBalance;
-        }
-
-        if (transaction.TransactionType == TransactionType.Withdrawal)
-        {
-            transaction.PotentialResultingAccountBalance = transaction.InitialAccountBalance - transaction.TransactionAmount;
-
-            if (transaction.PotentialResultingAccountBalance > 0)
-            {
-                // account can cover - allow the transaction
-                transaction.TransactionAllowed = true;
-                transaction.ResultingAccountBalance = transaction.PotentialResultingAccountBalance;
-                _accountState.State.Balance = transaction.ResultingAccountBalance;
-            }
-            else
-            {
-                // account would overdraft - halt the transaction
-                transaction.TransactionAllowed = false;
-
-                // now enable the overdraft penalty charge to their account
-                transaction.TransactionType = TransactionType.OverdraftPenalty;
-            }
-        }
-
-        // each time they overdraft charge them $1
-        if (transaction.TransactionType == TransactionType.OverdraftPenalty)
-        {
-            // charge the customer $1 for overdrafting
-            transaction.ResultingAccountBalance = transaction.ResultingAccountBalance - 1;
-
-            // allow the mutated transaction to be saved
-            transaction.TransactionAllowed = true;
-        }
-
+        transaction = await transactionGrain.GetTransaction();
         transaction.Timestamp = DateTime.Now;
-        _transactionListState.State.Add(transaction);
-        await _transactionListState.WriteStateAsync();
-        await _accountState.WriteStateAsync();
+
+        transactionListState.State.Add(transaction);
+        accountState.State.Balance = transaction.ResultingAccountBalance;
 
         var bank = GrainFactory.GetGrain<IBankGrain>(Guid.Empty);
         await bank.LogTransaction(transaction);
 
-        await GrainFactory.GetGrain<ICustomerGrain>(transaction.CustomerId).ReceiveAccountUpdate(_accountState.State);
+        await GrainFactory.GetGrain<ICustomerGrain>(transaction.CustomerId)
+                            .ReceiveAccountUpdate(accountState.State);
 
-        return transaction.TransactionAllowed && transaction.ResultingAccountBalance > 0;
+        return transaction.TransactionAllowed;
     }
 }
