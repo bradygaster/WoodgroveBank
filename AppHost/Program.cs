@@ -1,6 +1,5 @@
 #pragma warning disable AZPROVISION001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-using AppHost;
 using Azure.Provisioning.AppContainers;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -23,9 +22,9 @@ var bank = builder.AddProject<Projects.Bank>("bank")
        .WithExternalHttpEndpoints()
        .PublishAsAzureContainerApp((module, containerApp) =>
        {
-           containerApp.Template.Value!.Scale.Value!.MaxReplicas = 1;
-           containerApp.Template.Value!.Scale.Value!.MinReplicas = 1;
-           containerApp.Template.Value!.Scale.Value!.Rules = [];
+           containerApp.Template.Scale.MaxReplicas = 1;
+           containerApp.Template.Scale.MinReplicas = 1;
+           containerApp.Template.Scale.Rules = [];
        });
 
 var scaler = builder.AddProject<Projects.Scaler>("scaler")
@@ -34,10 +33,10 @@ var scaler = builder.AddProject<Projects.Scaler>("scaler")
        .AsHttp2Service()
        .PublishAsAzureContainerApp((module, containerApp) =>
        {
-           containerApp.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
-           containerApp.Template.Value!.Scale.Value!.MaxReplicas = 1;
-           containerApp.Template.Value!.Scale.Value!.MinReplicas = 1;
-           containerApp.Template.Value!.Scale.Value!.Rules = [];
+           containerApp.Configuration.Ingress.AllowInsecure = true;
+           containerApp.Template.Scale.MaxReplicas = 1;
+           containerApp.Template.Scale.MinReplicas = 1;
+           containerApp.Template.Scale.Rules = [];
        });
 
 var transactionsilo = builder.AddProject<Projects.TransactionSilo>("transactionsilo")
@@ -51,10 +50,10 @@ var transactionsilo = builder.AddProject<Projects.TransactionSilo>("transactions
                                           .Create($"{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}")
                                           .AsProvisioningParameter(module, "scalerEndpoint");
 
-                     app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
-                     app.Template.Value!.Scale.Value!.MinReplicas = 1;
-                     app.Template.Value!.Scale.Value!.MaxReplicas = 10;
-                     app.Template.Value!.Scale.Value!.Rules = [
+                     app.Configuration.Ingress.AllowInsecure = true;
+                     app.Template.Scale.MinReplicas = 1;
+                     app.Template.Scale.MaxReplicas = 10;
+                     app.Template.Scale.Rules = [
                         new ContainerAppScaleRule()
                         {
                             Name = "orleans",
@@ -83,10 +82,10 @@ var customersilo = builder.AddProject<Projects.CustomerSilo>("customersilo")
                                 .Create($"{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}")
                                 .AsProvisioningParameter(module, "scalerEndpoint");
 
-           app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
-           app.Template.Value!.Scale.Value!.MinReplicas = 1;
-           app.Template.Value!.Scale.Value!.MaxReplicas = 10;
-           app.Template.Value!.Scale.Value!.Rules = [
+           app.Configuration.Ingress.AllowInsecure = true;
+           app.Template.Scale.MinReplicas = 1;
+           app.Template.Scale.MaxReplicas = 10;
+           app.Template.Scale.Rules = [
                new ContainerAppScaleRule()
                {
                    Name = "orleans",
@@ -116,10 +115,10 @@ var accountsilo = builder.AddProject<Projects.AccountSilo>("accountsilo")
                                 .Create($"{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}")
                                 .AsProvisioningParameter(module, "scalerEndpoint");
 
-           app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
-           app.Template.Value!.Scale.Value!.MinReplicas = 1;
-           app.Template.Value!.Scale.Value!.MaxReplicas = 10;
-           app.Template.Value!.Scale.Value!.Rules = [
+           app.Configuration.Ingress.AllowInsecure = true;
+           app.Template.Scale.MinReplicas = 1;
+           app.Template.Scale.MaxReplicas = 10;
+           app.Template.Scale.Rules = [
                new ContainerAppScaleRule()
                {
                    Name = "orleans",
@@ -151,10 +150,10 @@ var api = builder.AddProject<Projects.API>("api")
                                           .Create($"{endpoint.Property(EndpointProperty.Host)}:{endpoint.Property(EndpointProperty.Port)}")
                                           .AsProvisioningParameter(module, "scalerEndpoint");
 
-                     app.Configuration.Value!.Ingress.Value!.AllowInsecure = true;
-                     app.Template.Value!.Scale.Value!.MinReplicas = 1;
-                     app.Template.Value!.Scale.Value!.MaxReplicas = 10;
-                     app.Template.Value!.Scale.Value!.Rules = [
+                     app.Configuration.Ingress.AllowInsecure = true;
+                     app.Template.Scale.MinReplicas = 1;
+                     app.Template.Scale.MaxReplicas = 10;
+                     app.Template.Scale.Rules = [
                         new ContainerAppScaleRule()
                         {
                             Name = "orleans",
@@ -181,9 +180,9 @@ builder.AddProject<Projects.Simulations>("simulations")
        .WaitFor(transactionsilo)
        .PublishAsAzureContainerApp((module, containerApp) =>
        {
-           containerApp.Template.Value!.Scale.Value!.MaxReplicas = 1;
-           containerApp.Template.Value!.Scale.Value!.MinReplicas = 1;
-           containerApp.Template.Value!.Scale.Value!.Rules = [];
+           containerApp.Template.Scale.MaxReplicas = 1;
+           containerApp.Template.Scale.MinReplicas = 1;
+           containerApp.Template.Scale.Rules = [];
        });
 
 builder.Build().Run();
